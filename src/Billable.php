@@ -22,7 +22,7 @@ trait Billable
      *
      * @param  int  $amount
      * @param  array  $options
-     * @return bool|mixed
+     * @return mixed
      */
     public function charge($amount, array $options = [])
     {
@@ -41,7 +41,7 @@ trait Billable
             throw new Exception('Braintree was unable to perform a charge: '.$response->message);
         }
 
-        return true;
+        return $response;
     }
 
     /**
