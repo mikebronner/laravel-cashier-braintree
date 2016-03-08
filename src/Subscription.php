@@ -109,14 +109,14 @@ class Subscription extends Model
         }
 
         if (! $this->active()) {
-            return $this->user->newSubscription('default', $plan)
+            return $this->user->newSubscription($this->name, $plan)
                                 ->skipTrial()->create();
         }
 
         $plan = BraintreeService::findPlan($plan);
 
         if ($this->wouldChangeBillingFrequency($plan)) {
-            throw new InvalidArgumentException("Braintree does not support swapping across intervals.");
+            return $this->swapAcrossFrequencies($plan);
         }
 
         $subscription = $this->asBraintreeSubscription();
@@ -152,9 +152,101 @@ class Subscription extends Model
      */
     protected function wouldChangeBillingFrequency($plan)
     {
+        return $plan->billingFrequency !==
+           BraintreeService::findPlan($this->braintree_plan)->billingFrequency;
+    }
+
+    /**
+     * Swap the subscription to a new Braintree plan with a different frequency.
+     *
+     * @param  string  $plan
+     * @return $this
+     */
+    protected function swapAcrossFrequencies($plan)
+    {
         $currentPlan = BraintreeService::findPlan($this->braintree_plan);
 
-        return $plan->billingFrequency !== $currentPlan->billingFrequency;
+        $discount = $this->switchingToMonthlyPlan($currentPlan, $plan)
+                                ? $this->getDiscountForSwitchToMonthly($currentPlan, $plan)
+                                : $this->getDiscountForSwitchToYearly();
+
+        if ($discount->amount > 0 && $discount->numberOfBillingCycles > 0) {
+            $options = ['discounts' => ['add' => [
+                [
+                    'inheritedFromId' => 'plan-credit',
+                    'amount' => (float) $discount->amount,
+                    'numberOfBillingCycles' => $discount->numberOfBillingCycles,
+                ],
+            ]]];
+        }
+
+        $this->cancelNow();
+
+        return $this->user->newSubscription($this->name, $plan->id)
+                            ->skipTrial()->create(null, [], $options);
+    }
+
+    /**
+     * Determine if the user is switching form yearly to monthly billing.
+     *
+     * @param  BraintreePlan  $currentPlanplan
+     * @param  BraintreePlan  $plan
+     * @return bool
+     */
+    protected function switchingToMonthlyPlan($currentPlan, $plan)
+    {
+        return $currentPlan->billingFrequency == 12 && $plan->billingFrequency == 1;
+    }
+
+    /**
+     * Get the discount to apply when switching to a monthly plan.
+     *
+     * @param  BraintreePlan  $currentPlanplan
+     * @param  BraintreePlan  $plan
+     * @return object
+     */
+    protected function getDiscountForSwitchToMonthly($currentPlan, $plan)
+    {
+        return (object) [
+            'amount' => $plan->price,
+            'numberOfBillingCycles' => floor(
+                $this->moneyRemainingOnYearlyPlan($currentPlan) / $plan->price
+            ),
+        ];
+    }
+
+    /**
+     * Calculate the amount of discount to apply to a swap to monthly billing.
+     *
+     * @param  BraintreePlan  $plan
+     * @return float
+     */
+    protected function moneyRemainingOnYearlyPlan($plan)
+    {
+        return ($plan->price / 365) * Carbon::today()->diffInDays(Carbon::instance(
+            $this->asBraintreeSubscription()->billingPeriodEndDate
+        ));
+    }
+
+    /**
+     * Get the discount to apply when switching to a monthly plan.
+     *
+     * @return object
+     */
+    protected function getDiscountForSwitchToYearly()
+    {
+        $amount = 0;
+
+        foreach ($this->asBraintreeSubscription()->discounts as $discount) {
+            if ($discount->id == 'plan-credit') {
+                $amount += (float) $discount->amount * $discount->numberOfBillingCycles;
+            }
+        }
+
+        return (object) [
+            'amount' => $amount,
+            'numberOfBillingCycles' => 1,
+        ];
     }
 
     /*
@@ -215,6 +307,22 @@ class Subscription extends Model
             $this->save();
         }
 
+
+        return $this;
+    }
+
+    /**
+     * Cancel the subscription immediately.
+     *
+     * @return $this
+     */
+    public function cancelNow()
+    {
+        $subscription = $this->asBraintreeSubscription();
+
+        BraintreeSubscription::cancel($subscription->id);
+
+        $this->markAsCancelled();
 
         return $this;
     }

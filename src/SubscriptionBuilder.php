@@ -120,13 +120,16 @@ class SubscriptionBuilder
      * Create a new Braintree subscription.
      *
      * @param  string|null  $token
-     * @param  array  $options
+     * @param  array  $customerOptions
+     * @param  array  $subscriptionOptions
      * @return \Laravel\Cashier\Subscription
      */
-    public function create($token = null, array $options = [])
+    public function create($token = null,
+                           array $customerOptions = [],
+                           array $subscriptionOptions = [])
     {
         $payload = $this->getSubscriptionPayload(
-            $this->getBraintreeCustomer($token, $options)
+            $this->getBraintreeCustomer($token, $customerOptions), $subscriptionOptions
         );
 
         if ($this->coupon) {
@@ -158,10 +161,11 @@ class SubscriptionBuilder
     /**
      * Get the base subscription payload for Braintree.
      *
-     * @param  \Braintree\Customer
+     * @param  \Braintree\Customer  $customer
+     * @param  array  $options
      * @return array
      */
-    protected function getSubscriptionPayload($customer)
+    protected function getSubscriptionPayload($customer, array $options = [])
     {
         $plan = BraintreeService::findPlan($this->plan);
 
@@ -171,14 +175,14 @@ class SubscriptionBuilder
             $trialDuration = $this->trialDays ?: 0;
         }
 
-        return [
+        return array_merge([
             'planId' => $this->plan,
             'price' => $plan->price * (1 + ($this->user->taxPercentage() / 100)),
             'paymentMethodToken' => $customer->paymentMethods[0]->token,
             'trialPeriod' => $this->trialDays && ! $this->skipTrial ? true : false,
             'trialDurationUnit' => 'day',
             'trialDuration' => $trialDuration,
-        ];
+        ], $options);
     }
 
     /**
@@ -189,10 +193,12 @@ class SubscriptionBuilder
      */
     protected function addCouponToPayload(array $payload)
     {
-        $payload['discounts'] = [
-            'add' => [[
-                'inheritedFromId' => $this->coupon,
-            ]],
+        if (! isset($payload['discounts']['add'])) {
+            $payload['discounts']['add'] = [];
+        }
+
+        $payload['discounts']['add'][] = [
+            'inheritedFromId' => $this->coupon,
         ];
 
         return $payload;
