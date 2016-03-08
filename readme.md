@@ -1,4 +1,4 @@
-# Laravel Cashier - Braintree Edition
+# Laravel Cashier - Braintree Edition (Beta)
 
 [![Build Status](https://travis-ci.org/laravel/cashier-braintree.svg)](https://travis-ci.org/laravel/cashier)
 [![Total Downloads](https://poser.pugx.org/laravel/cashier-braintree/d/total.svg)](https://packagist.org/packages/laravel/cashier)
