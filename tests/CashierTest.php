@@ -19,9 +19,9 @@ class CashierTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         Braintree_Configuration::environment('sandbox');
-        Braintree_Configuration::merchantId(env('BRAINTREE_MERCHANT_ID'));
-        Braintree_Configuration::publicKey(env('BRAINTREE_PUBLIC_KEY'));
-        Braintree_Configuration::privateKey(env('BRAINTREE_PRIVATE_KEY'));
+        Braintree_Configuration::merchantId(getenv('BRAINTREE_MERCHANT_ID'));
+        Braintree_Configuration::publicKey(getenv('BRAINTREE_PUBLIC_KEY'));
+        Braintree_Configuration::privateKey(getenv('BRAINTREE_PRIVATE_KEY'));
 
         Eloquent::unguard();
 
