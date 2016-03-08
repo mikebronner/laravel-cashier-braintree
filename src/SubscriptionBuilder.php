@@ -1,0 +1,222 @@
+<?php
+
+namespace Laravel\Cashier;
+
+use Exception;
+use Carbon\Carbon;
+use Braintree\Plan as BraintreePlan;
+use Braintree\Discount as BraintreeDiscount;
+use Braintree\Subscription as BraintreeSubscription;
+
+class SubscriptionBuilder
+{
+    /**
+     * The user model that is subscribing.
+     *
+     * @var \Illuminate\Database\Eloquent\Model
+     */
+    protected $user;
+
+    /**
+     * The name of the subscription.
+     *
+     * @var string
+     */
+    protected $name;
+
+    /**
+     * The name of the plan being subscribed to.
+     *
+     * @var string
+     */
+    protected $plan;
+
+    /**
+     * The number of trial days to apply to the subscription.
+     *
+     * @var int|null
+     */
+    protected $trialDays;
+
+    /**
+     * Indicates that the trial should end immediately.
+     *
+     * @var bool
+     */
+    protected $skipTrial = false;
+
+    /**
+     * The coupon code being applied to the customer.
+     *
+     * @var string|null
+     */
+    protected $coupon;
+
+    /**
+     * Create a new subscription builder instance.
+     *
+     * @param  mixed  $user
+     * @param  string  $name
+     * @param  string  $plan
+     * @return void
+     */
+    public function __construct($user, $name, $plan)
+    {
+        $this->user = $user;
+        $this->name = $name;
+        $this->plan = $plan;
+    }
+
+    /**
+     * Specify the ending date of the trial.
+     *
+     * @param  int  $trialDays
+     * @return $this
+     */
+    public function trialDays($trialDays)
+    {
+        $this->trialDays = $trialDays;
+
+        return $this;
+    }
+
+    /**
+     * Force the trial to end immediately.
+     *
+     * @return $this
+     */
+    public function skipTrial()
+    {
+        $this->skipTrial = true;
+
+        return $this;
+    }
+
+    /**
+     * The coupon to apply to a new subscription.
+     *
+     * @param  string  $coupon
+     * @return $this
+     */
+    public function withCoupon($coupon)
+    {
+        $this->coupon = $coupon;
+
+        return $this;
+    }
+
+    /**
+     * Add a new Braintree subscription to the user.
+     *
+     * @param array $options
+     * @return \Laravel\Cashier\Subscription
+     */
+    public function add(array $options = [])
+    {
+        return $this->create(null, $options);
+    }
+
+    /**
+     * Create a new Braintree subscription.
+     *
+     * @param  string|null  $token
+     * @param  array  $options
+     * @return \Laravel\Cashier\Subscription
+     */
+    public function create($token = null, array $options = [])
+    {
+        $payload = $this->getSubscriptionPayload(
+            $this->getBraintreeCustomer($token, $options)
+        );
+
+        if ($this->coupon) {
+            $payload = $this->addCouponToPayload($payload);
+        }
+
+        $response = BraintreeSubscription::create($payload);
+
+        if (! $response->success) {
+            throw new Exception('Braintree failed to create subscription: '.$response->message);
+        }
+
+        if ($this->skipTrial) {
+            $trialEndsAt = null;
+        } else {
+            $trialEndsAt = $this->trialDays ? Carbon::now()->addDays($this->trialDays) : null;
+        }
+
+        return $this->user->subscriptions()->create([
+            'name' => $this->name,
+            'braintree_id'   => $response->subscription->id,
+            'braintree_plan' => $this->plan,
+            'quantity' => 1,
+            'trial_ends_at' => $trialEndsAt,
+            'ends_at' => null,
+        ]);
+    }
+
+    /**
+     * Get the base subscription payload for Braintree.
+     *
+     * @param  \Braintree\Customer
+     * @return array
+     */
+    protected function getSubscriptionPayload($customer)
+    {
+        $plan = BraintreeService::findPlan($this->plan);
+
+        if ($this->skipTrial) {
+            $trialDuration = 0;
+        } else {
+            $trialDuration = $this->trialDays ?: 0;
+        }
+
+        return [
+            'planId' => $this->plan,
+            'price' => $plan->price * (1 + ($this->user->taxPercentage() / 100)),
+            'paymentMethodToken' => $customer->paymentMethods[0]->token,
+            'trialPeriod' => $this->trialDays && ! $this->skipTrial ? true : false,
+            'trialDurationUnit' => 'day',
+            'trialDuration' => $trialDuration,
+        ];
+    }
+
+    /**
+     * Add the coupon discount to the Braintree payload.
+     *
+     * @param  array  $payload
+     * @return array
+     */
+    protected function addCouponToPayload(array $payload)
+    {
+        $payload['discounts'] = [
+            'add' => [[
+                'inheritedFromId' => $this->coupon,
+            ]],
+        ];
+
+        return $payload;
+    }
+
+    /**
+     * Get the Braintree customer instance for the current user and token.
+     *
+     * @param  string|null  $token
+     * @param  array  $options
+     * @return \Braintree\Customer
+     */
+    protected function getBraintreeCustomer($token = null, array $options = [])
+    {
+        if (! $this->user->braintree_id) {
+            $customer = $this->user->createAsBraintreeCustomer($token, $options);
+        } else {
+            $customer = $this->user->asBraintreeCustomer();
+
+            if ($token) {
+                $this->user->updateCard($token);
+            }
+        }
+
+        return $customer;
+    }
+}
