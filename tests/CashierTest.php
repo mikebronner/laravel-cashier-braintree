@@ -216,6 +216,7 @@ class CashierTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($user->subscriptions));
         $this->assertNotNull($user->subscription('main')->braintree_id);
 
+        // Swap To Monthly
         $user->subscription('main')->swap('monthly-10-1');
 
         $user = $user->fresh();
@@ -230,6 +231,44 @@ class CashierTest extends PHPUnit_Framework_TestCase
             if ($discount->id === 'plan-credit') {
                 $this->assertEquals('10.00', $discount->amount);
                 $this->assertEquals(9, $discount->numberOfBillingCycles);
+                return;
+            }
+        }
+
+        $this->fail('Proration when switching to yearly was not done properly.');
+    }
+
+    public function test_monthly_to_yearly_properly_prorates()
+    {
+        $user = User::create([
+            'email' => 'taylor@laravel.com',
+            'name' => 'Taylor Otwell',
+        ]);
+
+        // Create Subscription
+        $user->newSubscription('main', 'yearly-100-1')->create($this->getTestToken());
+
+        $this->assertEquals(1, count($user->subscriptions));
+        $this->assertNotNull($user->subscription('main')->braintree_id);
+
+        // Swap To Monthly
+        $user->subscription('main')->swap('monthly-10-1');
+        $user = $user->fresh();
+
+        // Swap Back To Yearly
+        $user->subscription('main')->swap('yearly-100-1');
+        $user = $user->fresh();
+
+        $this->assertEquals(3, count($user->subscriptions));
+        $this->assertNotNull($user->subscription('main')->braintree_id);
+        $this->assertEquals('yearly-100-1', $user->subscription('main')->braintree_plan);
+
+        $braintreeSubscription = $user->subscription('main')->asBraintreeSubscription();
+
+        foreach ($braintreeSubscription->discounts as $discount) {
+            if ($discount->id === 'plan-credit') {
+                $this->assertEquals('90.00', $discount->amount);
+                $this->assertEquals(1, $discount->numberOfBillingCycles);
                 return;
             }
         }
