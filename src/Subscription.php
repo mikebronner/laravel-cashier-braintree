@@ -191,7 +191,7 @@ class Subscription extends Model
     /**
      * Determine if the user is switching form yearly to monthly billing.
      *
-     * @param  BraintreePlan  $currentPlanplan
+     * @param  BraintreePlan  $currentPlan
      * @param  BraintreePlan  $plan
      * @return bool
      */
@@ -203,7 +203,7 @@ class Subscription extends Model
     /**
      * Get the discount to apply when switching to a monthly plan.
      *
-     * @param  BraintreePlan  $currentPlanplan
+     * @param  BraintreePlan  $currentPlan
      * @param  BraintreePlan  $plan
      * @return object
      */
