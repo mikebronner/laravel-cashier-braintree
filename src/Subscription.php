@@ -183,7 +183,7 @@ class Subscription extends Model
         $this->cancelNow();
 
         return $this->user->newSubscription($this->name, $plan->id)
-                            ->skipTrial()->create(null, [], $options);
+                            ->skipTrial()->create();
     }
 
     /**
