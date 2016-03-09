@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 class WebhookController extends Controller
 {
     /**
-     * Handle a Stripe webhook call.
+     * Handle a Braintree webhook call.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Symfony\Component\HttpFoundation\Response

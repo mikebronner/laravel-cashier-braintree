@@ -229,7 +229,7 @@ class Subscription extends Model
     }
 
     /**
-     * Get the discount to apply when switching to a monthly plan.
+     * Get the discount to apply when switching to a yearly plan.
      *
      * @return object
      */
