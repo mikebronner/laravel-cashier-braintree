@@ -170,6 +170,8 @@ class Subscription extends Model
                                 ? $this->getDiscountForSwitchToMonthly($currentPlan, $plan)
                                 : $this->getDiscountForSwitchToYearly();
 
+        $options = [];
+
         if ($discount->amount > 0 && $discount->numberOfBillingCycles > 0) {
             $options = ['discounts' => ['add' => [
                 [
@@ -183,7 +185,7 @@ class Subscription extends Model
         $this->cancelNow();
 
         return $this->user->newSubscription($this->name, $plan->id)
-                            ->skipTrial()->create();
+                            ->skipTrial()->create(null, [], $options);
     }
 
     /**
