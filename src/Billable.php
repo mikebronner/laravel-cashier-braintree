@@ -22,7 +22,7 @@ trait Billable
      *
      * @param  int  $amount
      * @param  array  $options
-     * @return BraintreeTransaction
+     * @return \Braintree\Transaction
      */
     public function charge($amount, array $options = [])
     {
@@ -50,7 +50,7 @@ trait Billable
      * @param  string  $description
      * @param  int  $amount
      * @param  array  $options
-     * @return BraintreeTransaction
+     * @return \Braintree\Transaction
      */
     public function invoiceFor($description, $amount, array $options = [])
     {
