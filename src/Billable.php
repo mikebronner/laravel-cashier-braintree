@@ -367,7 +367,7 @@ trait Billable
     public function createAsBraintreeCustomer($token, array $options = [])
     {
         $response = BraintreeCustomer::create(
-            array_merge($options, [
+            array_replace_recursive($options, [
                 'firstName' => Arr::get(explode(' ', $this->name), 0),
                 'lastName' => Arr::get(explode(' ', $this->name), 1),
                 'email' => $this->email,
