@@ -93,7 +93,7 @@ trait Billable
         }
 
         return $subscription && $subscription->onTrial() &&
-               $subscription->braintree === $plan;
+               $subscription->braintree_plan === $plan;
     }
 
     /**
