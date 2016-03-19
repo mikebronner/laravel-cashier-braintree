@@ -227,7 +227,7 @@ class Subscription extends Model
     {
         return ($plan->price / 365) * Carbon::today()->diffInDays(Carbon::instance(
             $this->asBraintreeSubscription()->billingPeriodEndDate
-        ));
+        ), false);
     }
 
     /**
