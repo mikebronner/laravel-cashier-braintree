@@ -93,7 +93,7 @@ trait Billable
         }
 
         return $subscription && $subscription->onTrial() &&
-               $subscription->braintree === $plan;
+               $subscription->braintree_plan === $plan;
     }
 
     /**
@@ -103,7 +103,7 @@ trait Billable
      */
     public function onGenericTrial()
     {
-        return $this->trial_ends_at && Carbon::today()->lt($this->trial_ends_at);
+        return $this->trial_ends_at && Carbon::now()->lt($this->trial_ends_at);
     }
 
     /**
@@ -367,7 +367,7 @@ trait Billable
     public function createAsBraintreeCustomer($token, array $options = [])
     {
         $response = BraintreeCustomer::create(
-            array_merge($options, [
+            array_replace_recursive($options, [
                 'firstName' => Arr::get(explode(' ', $this->name), 0),
                 'lastName' => Arr::get(explode(' ', $this->name), 1),
                 'email' => $this->email,
