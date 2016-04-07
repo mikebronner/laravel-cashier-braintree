@@ -119,6 +119,9 @@ class CashierTest extends PHPUnit_Framework_TestCase
         // Invoice Tests
         $invoice = $user->invoicesIncludingPending()[0];
 
+        $foundInvoice = $user->findInvoice($invoice->id);
+        $this->assertEquals($invoice->id, $foundInvoice->id);
+
         $this->assertEquals('$10.00', $invoice->total());
         $this->assertFalse($invoice->hasDiscount());
         $this->assertEquals(0, count($invoice->coupons()));
