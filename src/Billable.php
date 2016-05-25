@@ -381,7 +381,7 @@ trait Billable
                 'creditCard' => [
                     'options' => [
                         'verifyCard' => true,
-                    ]
+                    ],
                 ],
             ], $options)
         );
