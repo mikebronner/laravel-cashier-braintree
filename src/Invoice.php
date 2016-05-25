@@ -57,11 +57,17 @@ class Invoice
      */
     public function total()
     {
-        $total = $this->formatAmount(
-            max(0, $this->transaction->amount)
-        );
+        return $this->formatAmount($this->rawTotal());
+    }
 
-        return $total;
+    /**
+     * Get the raw total amount that was paid (or will be paid).
+     *
+     * @return float
+     */
+    public function rawTotal()
+    {
+        return max(0, $this->transaction->amount);
     }
 
     /**
