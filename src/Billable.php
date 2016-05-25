@@ -373,7 +373,7 @@ trait Billable
     public function createAsBraintreeCustomer($token, array $options = [])
     {
         $response = BraintreeCustomer::create(
-            array_replace_recursive($options, [
+            array_merge([
                 'firstName' => Arr::get(explode(' ', $this->name), 0),
                 'lastName' => Arr::get(explode(' ', $this->name), 1),
                 'email' => $this->email,
@@ -383,7 +383,7 @@ trait Billable
                         'verifyCard' => true,
                     ]
                 ],
-            ])
+            ], $options)
         );
 
         if (! $response->success) {
