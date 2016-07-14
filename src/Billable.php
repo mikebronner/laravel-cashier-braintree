@@ -220,8 +220,8 @@ trait Billable
         $customer = $this->asBraintreeCustomer();
 
         $parameters = array_merge([
-            TransactionSearch::customerId()->is($customer->id),
-            TransactionSearch::createdAt()->between(
+            'id' => TransactionSearch::customerId()->is($customer->id),
+            'range' => TransactionSearch::createdAt()->between(
                 Carbon::today()->subYears(2)->format('m/d/Y H:s'),
                 Carbon::tomorrow()->format('m/d/Y H:s')
             ),
