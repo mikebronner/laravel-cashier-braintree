@@ -26,6 +26,7 @@ You will need to set the following details locally and on your Braintree account
     * Plan ID: yearly-100-1, Price: $100, Billing cycle of every year
 #### Discount
     * Discount ID: coupon-1, Price: $5
+    * Discount ID: plan-credit, Price $1
 
 
 ## Official Documentation
