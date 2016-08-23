@@ -23,7 +23,7 @@ You will need to set the following details locally and on your Braintree account
 #### Plans
     * Plan ID: monthly-10-1, Price: $10, Billing cycle of every month
     * Plan ID: monthly-10-2, Price: $10, Billing cycle of every month
-    * Plan ID: yearly-100-1, Price: $100, Billing cycle of every year
+    * Plan ID: yearly-100-1, Price: $100, Billing cycle of every 12 months
 #### Discount
     * Discount ID: coupon-1, Price: $5
     * Discount ID: plan-credit, Price $1
