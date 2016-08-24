@@ -35,7 +35,7 @@
         "branch-alias": {
             "dev-master": "2.0-dev"
         }
-    }
+    },
     "scripts": {
         "post-root-package-install": [
             "php -r \"file_exists('.env') || copy('.env.example', '.env');\""
