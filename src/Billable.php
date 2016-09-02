@@ -258,20 +258,23 @@ trait Billable
      * Update customer's credit card.
      *
      * @param  string  $token
+     * @param  array  $options
      * @return void
      */
-    public function updateCard($token)
+    public function updateCard($token, array $options = [])
     {
         $customer = $this->asBraintreeCustomer();
 
-        $response = PaymentMethod::create([
-            'customerId' => $customer->id,
-            'paymentMethodNonce' => $token,
-            'options' => [
-                'makeDefault' => true,
-                'verifyCard' => true,
-            ],
-        ]);
+        $response = PaymentMethod::create(
+            array_replace_recursive([
+                'customerId' => $customer->id,
+                'paymentMethodNonce' => $token,
+                'options' => [
+                    'makeDefault' => true,
+                    'verifyCard' => true,
+                ],
+            ], $options)
+        );
 
         if (! $response->success) {
             throw new Exception('Braintree was unable to create a payment method: '.$response->message);
