@@ -222,8 +222,8 @@ trait Billable
         $parameters = array_merge([
             'id' => TransactionSearch::customerId()->is($customer->id),
             'range' => TransactionSearch::createdAt()->between(
-                Carbon::today()->subYears(2)->format('m/d/Y H:s'),
-                Carbon::tomorrow()->format('m/d/Y H:s')
+                Carbon::today()->subYears(2)->format('m/d/Y H:i'),
+                Carbon::tomorrow()->format('m/d/Y H:i')
             ),
         ], $parameters);
 
