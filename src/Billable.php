@@ -140,7 +140,7 @@ trait Billable
         return $this->subscriptions->sortByDesc(function ($value) {
             return $value->created_at->getTimestamp();
         })
-        ->first(function ($key, $value) use ($subscription) {
+        ->first(function ($value) use ($subscription) {
             return $value->name === $subscription;
         });
     }
@@ -220,10 +220,10 @@ trait Billable
         $customer = $this->asBraintreeCustomer();
 
         $parameters = array_merge([
-            TransactionSearch::customerId()->is($customer->id),
-            TransactionSearch::createdAt()->between(
-                Carbon::today()->subYears(2)->format('m/d/Y H:s'),
-                Carbon::tomorrow()->format('m/d/Y H:s')
+            'id' => TransactionSearch::customerId()->is($customer->id),
+            'range' => TransactionSearch::createdAt()->between(
+                Carbon::today()->subYears(2)->format('m/d/Y H:i'),
+                Carbon::tomorrow()->format('m/d/Y H:i')
             ),
         ], $parameters);
 
@@ -258,20 +258,23 @@ trait Billable
      * Update customer's credit card.
      *
      * @param  string  $token
+     * @param  array  $options
      * @return void
      */
-    public function updateCard($token)
+    public function updateCard($token, array $options = [])
     {
         $customer = $this->asBraintreeCustomer();
 
-        $response = PaymentMethod::create([
-            'customerId' => $customer->id,
-            'paymentMethodNonce' => $token,
-            'options' => [
-                'makeDefault' => true,
-                'verifyCard' => true,
-            ],
-        ]);
+        $response = PaymentMethod::create(
+            array_replace_recursive([
+                'customerId' => $customer->id,
+                'paymentMethodNonce' => $token,
+                'options' => [
+                    'makeDefault' => true,
+                    'verifyCard' => true,
+                ],
+            ], $options)
+        );
 
         if (! $response->success) {
             throw new Exception('Braintree was unable to create a payment method: '.$response->message);
@@ -358,7 +361,7 @@ trait Billable
      */
     public function onPlan($plan)
     {
-        return ! is_null($this->subscriptions->first(function ($key, $value) use ($plan) {
+        return ! is_null($this->subscriptions->first(function ($value) use ($plan) {
             return $value->braintree_plan === $plan;
         }));
     }

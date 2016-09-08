@@ -49,7 +49,7 @@ class Subscription extends Model
     }
 
     /**
-     * Determine if the subscrition is active.
+     * Determine if the subscription is active.
      *
      * @return bool
      */
@@ -287,7 +287,7 @@ class Subscription extends Model
     }
 
     /**
-     * Cacnel the subscription.
+     * Cancel the subscription.
      *
      * @return $this
      */
