@@ -307,6 +307,37 @@ class CashierTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($subscription->cancelled());
     }
 
+    public function test_marking_subscription_cancelled_on_grace_period_as_cancelled_now_from_webhook()
+    {
+        $user = User::create([
+            'email' => 'taylor@laravel.com',
+            'name' => 'Taylor Otwell',
+        ]);
+
+        $user->newSubscription('main', 'monthly-10-1')
+                ->create($this->getTestToken());
+
+        $subscription = $user->subscription('main');
+
+        $subscription->cancel();
+        $this->assertTrue($subscription->onGracePeriod());
+
+        $request = Request::create('/', 'POST', [], [], [], [], json_encode(['kind' => 'SubscriptionCanceled',
+            'subscription' => [
+                'id' => $subscription->braintree_id,
+            ],
+        ]));
+
+        $controller = new CashierTestControllerStub;
+        $response = $controller->handleWebhook($request);
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $user = $user->fresh();
+        $subscription = $user->subscription('main');
+
+        $this->assertFalse($subscription->onGracePeriod());
+    }
+
     protected function getTestToken()
     {
         return 'fake-valid-nonce';
