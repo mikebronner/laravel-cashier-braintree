@@ -76,8 +76,9 @@ class WebhookController extends Controller
     protected function cancelSubscription($subscriptionId)
     {
         $subscription = $this->getSubscriptionById($subscriptionId);
+        $should_cancel = ! $subscription->cancelled() || $subscription->onGracePeriod();
 
-        if ($subscription && ! $subscription->cancelled()) {
+        if ($subscription && $should_cancel) {
             $subscription->markAsCancelled();
         }
 
