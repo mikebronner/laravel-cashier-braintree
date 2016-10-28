@@ -2,6 +2,8 @@
 
 namespace Laravel\Cashier;
 
+use Exception;
+
 class Cashier
 {
     /**
