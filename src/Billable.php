@@ -52,13 +52,26 @@ trait Billable
      * @param  array  $options
      * @return \Braintree\Transaction
      */
-    public function invoiceFor($description, $amount, array $options = [])
+    public function invoiceForUpcoming($description, $amount, array $options = [])
     {
         return $this->charge($amount, array_merge($options, [
             'customFields' => [
                 'description' => $description,
             ],
         ]));
+    }
+
+    /**
+     * Invoice the customer for the given amount (alias).
+     *
+     * @param  string  $description
+     * @param  int  $amount
+     * @param  array  $options
+     * @return \Braintree\Transaction
+     */
+    public function invoiceFor($description, $amount, array $options = [])
+    {
+        return $this->invoiceForUpcoming($description, $amount, $options);
     }
 
     /**
