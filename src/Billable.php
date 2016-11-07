@@ -52,7 +52,7 @@ trait Billable
      * @param  array  $options
      * @return \Braintree\Transaction
      */
-    public function invoiceForUpcoming($description, $amount, array $options = [])
+    public function tab($description, $amount, array $options = [])
     {
         return $this->charge($amount, array_merge($options, [
             'customFields' => [
@@ -71,7 +71,7 @@ trait Billable
      */
     public function invoiceFor($description, $amount, array $options = [])
     {
-        return $this->invoiceForUpcoming($description, $amount, $options);
+        return $this->tab($description, $amount, $options);
     }
 
     /**
