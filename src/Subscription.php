@@ -134,7 +134,7 @@ class Subscription extends Model
 
         $plan = BraintreeService::findPlan($plan);
 
-        if ($this->wouldChangeBillingFrequency($plan)) {
+        if ($this->wouldChangeBillingFrequency($plan) && $this->prorate) {
             return $this->swapAcrossFrequencies($plan);
         }
 
