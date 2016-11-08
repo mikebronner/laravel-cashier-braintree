@@ -29,7 +29,7 @@ class Subscription extends Model
     ];
 
     /**
-     * Indicates if the plan change should be prorated.
+     * Indicates plan changes should be prorated.
      *
      * @var bool
      */
@@ -101,18 +101,6 @@ class Subscription extends Model
         } else {
             return false;
         }
-    }
-
-    /**
-     * Indicate that the plan change should not be prorated.
-     *
-     * @return $this
-     */
-    public function noProrate()
-    {
-        $this->prorate = false;
-
-        return $this;
     }
 
     /**
@@ -379,6 +367,18 @@ class Subscription extends Model
         ]);
 
         $this->fill(['ends_at' => null])->save();
+
+        return $this;
+    }
+
+    /**
+     * Indicate that plan changes should not be prorated.
+     *
+     * @return $this
+     */
+    public function noProrate()
+    {
+        $this->prorate = false;
 
         return $this;
     }
