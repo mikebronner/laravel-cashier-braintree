@@ -29,6 +29,13 @@ class Subscription extends Model
     ];
 
     /**
+     * Indicates if the plan change should be prorated.
+     *
+     * @var bool
+     */
+    protected $prorate = true;
+
+    /**
      * Get the user that owns the subscription.
      */
     public function user()
@@ -97,6 +104,18 @@ class Subscription extends Model
     }
 
     /**
+     * Indicate that the plan change should not be prorated.
+     *
+     * @return $this
+     */
+    public function noProrate()
+    {
+        $this->prorate = false;
+
+        return $this;
+    }
+
+    /**
      * Swap the subscription to a new Braintree plan.
      *
      * @param  string  $plan
@@ -115,7 +134,7 @@ class Subscription extends Model
 
         $plan = BraintreeService::findPlan($plan);
 
-        if ($this->wouldChangeBillingFrequency($plan)) {
+        if ($this->wouldChangeBillingFrequency($plan) && $this->prorate) {
             return $this->swapAcrossFrequencies($plan);
         }
 
@@ -127,7 +146,7 @@ class Subscription extends Model
             'neverExpires' => true,
             'numberOfBillingCycles' => null,
             'options' => [
-                'prorateCharges' => true,
+                'prorateCharges' => $this->prorate,
             ],
         ]);
 
