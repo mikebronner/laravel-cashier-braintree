@@ -87,7 +87,7 @@ trait Billable
     }
 
     /**
-     * Determine if the user is on trial.
+     * Determine if the model is on trial.
      *
      * @param  string  $subscription
      * @param  string|null  $plan
@@ -110,7 +110,7 @@ trait Billable
     }
 
     /**
-     * Determine if the user is on a "generic" trial at the user level.
+     * Determine if the model is on a "generic" trial at the user level.
      *
      * @return bool
      */
@@ -120,7 +120,7 @@ trait Billable
     }
 
     /**
-     * Determine if the user has a given subscription.
+     * Determine if the model has a given subscription.
      *
      * @param  string  $subscription
      * @param  string|null  $plan
@@ -159,7 +159,7 @@ trait Billable
     }
 
     /**
-     * Get all of the subscriptions for the user.
+     * Get all of the subscriptions for the model.
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -307,7 +307,7 @@ trait Billable
     }
 
     /**
-     * Update the payment method token for all of the user's subscriptions.
+     * Update the payment method token for all of the model's subscriptions.
      *
      * @param  string  $token
      * @return void
@@ -343,7 +343,7 @@ trait Billable
     }
 
     /**
-     * Determine if the user is actively subscribed to one of the given plans.
+     * Determine if the model is actively subscribed to one of the given plans.
      *
      * @param  array|string  $plans
      * @param  string  $subscription
@@ -380,7 +380,7 @@ trait Billable
     }
 
     /**
-     * Create a Braintree customer for the given user.
+     * Create a Braintree customer for the given model.
      *
      * @param  string  $token
      * @param  array  $options
@@ -431,7 +431,7 @@ trait Billable
     }
 
     /**
-     * Get the Braintree customer for the user.
+     * Get the Braintree customer for the model.
      *
      * @return \Braintree\Customer
      */

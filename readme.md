@@ -18,6 +18,7 @@ You will need to set the following details locally and on your Braintree account
     BRAINTREE_MERCHANT_ID=
     BRAINTREE_PUBLIC_KEY=
     BRAINTREE_PRIVATE_KEY=
+    BRAINTREE_MODEL=User
 
 ### Braintree
 #### Plans

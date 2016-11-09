@@ -68,26 +68,26 @@ class CashierTest extends PHPUnit_Framework_TestCase
      */
     public function testSubscriptionsCanBeCreated()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
         // Create Subscription
-        $user->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
+        $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
 
-        $this->assertEquals(1, count($user->subscriptions));
-        $this->assertNotNull($user->subscription('main')->braintree_id);
+        $this->assertEquals(1, count($owner->subscriptions));
+        $this->assertNotNull($owner->subscription('main')->braintree_id);
 
-        $this->assertTrue($user->subscribed('main'));
-        $this->assertTrue($user->subscribed('main', 'monthly-10-1'));
-        $this->assertFalse($user->subscribed('main', 'monthly-10-2'));
-        $this->assertTrue($user->subscription('main')->active());
-        $this->assertFalse($user->subscription('main')->cancelled());
-        $this->assertFalse($user->subscription('main')->onGracePeriod());
+        $this->assertTrue($owner->subscribed('main'));
+        $this->assertTrue($owner->subscribed('main', 'monthly-10-1'));
+        $this->assertFalse($owner->subscribed('main', 'monthly-10-2'));
+        $this->assertTrue($owner->subscription('main')->active());
+        $this->assertFalse($owner->subscription('main')->cancelled());
+        $this->assertFalse($owner->subscription('main')->onGracePeriod());
 
         // Cancel Subscription
-        $subscription = $user->subscription('main');
+        $subscription = $owner->subscription('main');
         $subscription->cancel();
 
         $this->assertTrue($subscription->active());
@@ -117,9 +117,9 @@ class CashierTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('monthly-10-2', $subscription->braintree_plan);
 
         // Invoice Tests
-        $invoice = $user->invoicesIncludingPending()[0];
+        $invoice = $owner->invoicesIncludingPending()[0];
 
-        $foundInvoice = $user->findInvoice($invoice->id);
+        $foundInvoice = $owner->findInvoice($invoice->id);
         $this->assertEquals($invoice->id, $foundInvoice->id);
 
         $this->assertEquals('$10.00', $invoice->total());
@@ -130,26 +130,26 @@ class CashierTest extends PHPUnit_Framework_TestCase
 
     public function test_creating_subscription_with_coupons()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
         // Create Subscription
-        $user->newSubscription('main', 'monthly-10-1')
+        $owner->newSubscription('main', 'monthly-10-1')
                 ->withCoupon('coupon-1')->create($this->getTestToken());
 
-        $subscription = $user->subscription('main');
+        $subscription = $owner->subscription('main');
 
-        $this->assertTrue($user->subscribed('main'));
-        $this->assertTrue($user->subscribed('main', 'monthly-10-1'));
-        $this->assertFalse($user->subscribed('main', 'monthly-10-2'));
+        $this->assertTrue($owner->subscribed('main'));
+        $this->assertTrue($owner->subscribed('main', 'monthly-10-1'));
+        $this->assertFalse($owner->subscribed('main', 'monthly-10-2'));
         $this->assertTrue($subscription->active());
         $this->assertFalse($subscription->cancelled());
         $this->assertFalse($subscription->onGracePeriod());
 
         // Invoice Tests
-        $invoice = $user->invoicesIncludingPending()[0];
+        $invoice = $owner->invoicesIncludingPending()[0];
 
         $this->assertTrue($invoice->hasDiscount());
         $this->assertEquals('$5.00', $invoice->total());
@@ -158,16 +158,16 @@ class CashierTest extends PHPUnit_Framework_TestCase
 
     public function test_creating_subscription_with_trial()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
         // Create Subscription
-        $user->newSubscription('main', 'monthly-10-1')
+        $owner->newSubscription('main', 'monthly-10-1')
                 ->trialDays(7)->create($this->getTestToken());
 
-        $subscription = $user->subscription('main');
+        $subscription = $owner->subscription('main');
 
         $this->assertTrue($subscription->active());
         $this->assertTrue($subscription->onTrial());
@@ -184,18 +184,18 @@ class CashierTest extends PHPUnit_Framework_TestCase
 
     public function test_applying_coupons_to_existing_customers()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
         // Create Subscription
-        $user->newSubscription('main', 'monthly-10-1')
+        $owner->newSubscription('main', 'monthly-10-1')
                 ->create($this->getTestToken());
 
-        $user->applyCoupon('coupon-1', 'main');
+        $owner->applyCoupon('coupon-1', 'main');
 
-        $subscription = $user->subscription('main')->asBraintreeSubscription();
+        $subscription = $owner->subscription('main')->asBraintreeSubscription();
 
         foreach ($subscription->discounts as $discount) {
             if ($discount->id === 'coupon-1') {
@@ -208,27 +208,27 @@ class CashierTest extends PHPUnit_Framework_TestCase
 
     public function test_yearly_to_monthly_properly_prorates()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
         // Create Subscription
-        $user->newSubscription('main', 'yearly-100-1')->create($this->getTestToken());
+        $owner->newSubscription('main', 'yearly-100-1')->create($this->getTestToken());
 
-        $this->assertEquals(1, count($user->subscriptions));
-        $this->assertNotNull($user->subscription('main')->braintree_id);
+        $this->assertEquals(1, count($owner->subscriptions));
+        $this->assertNotNull($owner->subscription('main')->braintree_id);
 
         // Swap To Monthly
-        $user->subscription('main')->swap('monthly-10-1');
+        $owner->subscription('main')->swap('monthly-10-1');
 
-        $user = $user->fresh();
+        $owner = $owner->fresh();
 
-        $this->assertEquals(2, count($user->subscriptions));
-        $this->assertNotNull($user->subscription('main')->braintree_id);
-        $this->assertEquals('monthly-10-1', $user->subscription('main')->braintree_plan);
+        $this->assertEquals(2, count($owner->subscriptions));
+        $this->assertNotNull($owner->subscription('main')->braintree_id);
+        $this->assertEquals('monthly-10-1', $owner->subscription('main')->braintree_plan);
 
-        $braintreeSubscription = $user->subscription('main')->asBraintreeSubscription();
+        $braintreeSubscription = $owner->subscription('main')->asBraintreeSubscription();
 
         foreach ($braintreeSubscription->discounts as $discount) {
             if ($discount->id === 'plan-credit') {
@@ -243,30 +243,30 @@ class CashierTest extends PHPUnit_Framework_TestCase
 
     public function test_monthly_to_yearly_properly_prorates()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
         // Create Subscription
-        $user->newSubscription('main', 'yearly-100-1')->create($this->getTestToken());
+        $owner->newSubscription('main', 'yearly-100-1')->create($this->getTestToken());
 
-        $this->assertEquals(1, count($user->subscriptions));
-        $this->assertNotNull($user->subscription('main')->braintree_id);
+        $this->assertEquals(1, count($owner->subscriptions));
+        $this->assertNotNull($owner->subscription('main')->braintree_id);
 
         // Swap To Monthly
-        $user->subscription('main')->swap('monthly-10-1');
-        $user = $user->fresh();
+        $owner->subscription('main')->swap('monthly-10-1');
+        $owner = $owner->fresh();
 
         // Swap Back To Yearly
-        $user->subscription('main')->swap('yearly-100-1');
-        $user = $user->fresh();
+        $owner->subscription('main')->swap('yearly-100-1');
+        $owner = $owner->fresh();
 
-        $this->assertEquals(3, count($user->subscriptions));
-        $this->assertNotNull($user->subscription('main')->braintree_id);
-        $this->assertEquals('yearly-100-1', $user->subscription('main')->braintree_plan);
+        $this->assertEquals(3, count($owner->subscriptions));
+        $this->assertNotNull($owner->subscription('main')->braintree_id);
+        $this->assertEquals('yearly-100-1', $owner->subscription('main')->braintree_plan);
 
-        $braintreeSubscription = $user->subscription('main')->asBraintreeSubscription();
+        $braintreeSubscription = $owner->subscription('main')->asBraintreeSubscription();
 
         foreach ($braintreeSubscription->discounts as $discount) {
             if ($discount->id === 'plan-credit') {
@@ -281,15 +281,15 @@ class CashierTest extends PHPUnit_Framework_TestCase
 
     public function test_marking_as_cancelled_from_webhook()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
-        $user->newSubscription('main', 'monthly-10-1')
+        $owner->newSubscription('main', 'monthly-10-1')
                 ->create($this->getTestToken());
 
-        $subscription = $user->subscription('main');
+        $subscription = $owner->subscription('main');
 
         $request = Request::create('/', 'POST', [], [], [], [], json_encode(['kind' => 'SubscriptionCanceled',
             'subscription' => [
@@ -301,23 +301,23 @@ class CashierTest extends PHPUnit_Framework_TestCase
         $response = $controller->handleWebhook($request);
         $this->assertEquals(200, $response->getStatusCode());
 
-        $user = $user->fresh();
-        $subscription = $user->subscription('main');
+        $owner = $owner->fresh();
+        $subscription = $owner->subscription('main');
 
         $this->assertTrue($subscription->cancelled());
     }
 
     public function test_marking_subscription_cancelled_on_grace_period_as_cancelled_now_from_webhook()
     {
-        $user = User::create([
+        $owner = User::create([
             'email' => 'taylor@laravel.com',
             'name' => 'Taylor Otwell',
         ]);
 
-        $user->newSubscription('main', 'monthly-10-1')
+        $owner->newSubscription('main', 'monthly-10-1')
                 ->create($this->getTestToken());
 
-        $subscription = $user->subscription('main');
+        $subscription = $owner->subscription('main');
 
         $subscription->cancel();
         $this->assertTrue($subscription->onGracePeriod());
@@ -332,8 +332,8 @@ class CashierTest extends PHPUnit_Framework_TestCase
         $response = $controller->handleWebhook($request);
         $this->assertEquals(200, $response->getStatusCode());
 
-        $user = $user->fresh();
-        $subscription = $user->subscription('main');
+        $owner = $owner->fresh();
+        $subscription = $owner->subscription('main');
 
         $this->assertFalse($subscription->onGracePeriod());
     }

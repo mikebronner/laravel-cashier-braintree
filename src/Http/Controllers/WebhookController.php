@@ -85,7 +85,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Get the user for the given subscription ID.
+     * Get the model for the given subscription ID.
      *
      * @param  string  $subscriptionId
      * @return mixed
