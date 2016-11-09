@@ -14,7 +14,7 @@
         "illuminate/database": "~5.3",
         "illuminate/support": "~5.3",
         "braintree/braintree_php": "~3.0",
-        "dompdf/dompdf": "^0.6.1",
+        "dompdf/dompdf": "^0.7.0",
         "nesbot/carbon": "~1.0",
         "symfony/http-kernel": "~2.7|~3.0"
     },
