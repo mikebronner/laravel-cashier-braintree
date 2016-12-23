@@ -177,7 +177,7 @@ class SubscriptionBuilder
 
         return array_merge([
             'planId' => $this->plan,
-            'price' => $plan->price * (1 + ($this->owner->taxPercentage() / 100)),
+            'price' => (string) round($plan->price * (1 + ($this->owner->taxPercentage() / 100)), 2),
             'paymentMethodToken' => $customer->paymentMethods[0]->token,
             'trialPeriod' => $this->trialDays && ! $this->skipTrial ? true : false,
             'trialDurationUnit' => 'day',
