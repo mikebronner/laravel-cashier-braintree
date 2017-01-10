@@ -2,8 +2,8 @@
 
 namespace Laravel\Cashier;
 
-use DOMPDF;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 use Braintree\Transaction as BraintreeTransaction;
@@ -236,9 +236,9 @@ class Invoice
             require_once $configPath;
         }
 
-        $dompdf = new DOMPDF;
+        $dompdf = new Dompdf;
 
-        $dompdf->load_html($this->view($data)->render());
+        $dompdf->loadHtml($this->view($data)->render());
 
         $dompdf->render();
 
