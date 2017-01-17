@@ -152,7 +152,6 @@ class Subscription extends Model
             $this->fill([
                 'braintree_plan' => $plan->id,
                 'ends_at' => null,
-                'trial_ends_at' => null,
             ])->save();
         } else {
             throw new Exception('Braintree failed to swap plans: '.$response->message);
