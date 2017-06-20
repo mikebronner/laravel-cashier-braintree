@@ -4,8 +4,6 @@ namespace Laravel\Cashier;
 
 use Exception;
 use Carbon\Carbon;
-use Braintree\Plan as BraintreePlan;
-use Braintree\Discount as BraintreeDiscount;
 use Braintree\Subscription as BraintreeSubscription;
 
 class SubscriptionBuilder
@@ -108,7 +106,7 @@ class SubscriptionBuilder
     /**
      * Add a new Braintree subscription to the model.
      *
-     * @param array $options
+     * @param  array  $options
      * @return \Laravel\Cashier\Subscription
      */
     public function add(array $options = [])
@@ -123,6 +121,7 @@ class SubscriptionBuilder
      * @param  array  $customerOptions
      * @param  array  $subscriptionOptions
      * @return \Laravel\Cashier\Subscription
+     * @throws \Exception
      */
     public function create($token = null,
                            array $customerOptions = [],

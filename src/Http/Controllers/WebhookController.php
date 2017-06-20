@@ -5,8 +5,8 @@ namespace Laravel\Cashier\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use Laravel\Cashier\Subscription;
-use Illuminate\Routing\Controller;
 use Braintree\WebhookNotification;
+use Illuminate\Routing\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
 class WebhookController extends Controller
@@ -29,16 +29,16 @@ class WebhookController extends Controller
 
         if (method_exists($this, $method)) {
             return $this->{$method}($webhook);
-        } else {
-            return $this->missingMethod();
         }
+
+        return $this->missingMethod();
     }
 
     /**
      * Parse the given Braintree webhook notification request.
      *
-     * @param  Request  $request
-     * @return WebhookNotification
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Braintree\WebhookNotification
      */
     protected function parseBraintreeNotification($request)
     {
@@ -48,7 +48,7 @@ class WebhookController extends Controller
     /**
      * Handle a subscription cancellation notification from Braintree.
      *
-     * @param  WebhookNotification  $webhook
+     * @param  \Braintree\WebhookNotification  $webhook
      * @return \Illuminate\Http\Response
      */
     protected function handleSubscriptionCanceled($webhook)
@@ -59,7 +59,7 @@ class WebhookController extends Controller
     /**
      * Handle a subscription expiration notification from Braintree.
      *
-     * @param  WebhookNotification  $webhook
+     * @param  \Braintree\WebhookNotification  $webhook
      * @return \Illuminate\Http\Response
      */
     protected function handleSubscriptionExpired($webhook)
@@ -88,7 +88,7 @@ class WebhookController extends Controller
      * Get the model for the given subscription ID.
      *
      * @param  string  $subscriptionId
-     * @return mixed
+     * @return \Laravel\Cashier\Subscription
      */
     protected function getSubscriptionById($subscriptionId)
     {
@@ -98,8 +98,8 @@ class WebhookController extends Controller
     /**
      * Handle calls to missing methods on the controller.
      *
-     * @param  array   $parameters
-     * @return mixed
+     * @param  array  $parameters
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function missingMethod($parameters = [])
     {
