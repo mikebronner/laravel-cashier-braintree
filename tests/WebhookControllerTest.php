@@ -1,6 +1,9 @@
 <?php
 
+namespace Laravel\Cashier\Tests;
+
 use Illuminate\Http\Request;
+use PHPUnit_Framework_TestCase;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 
 class WebhookControllerTest extends PHPUnit_Framework_TestCase
