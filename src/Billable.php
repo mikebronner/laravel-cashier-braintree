@@ -170,22 +170,6 @@ trait Billable
     }
 
     /**
-     * Get the default payment method.
-     *
-     * @return array
-     */
-    public function paymentMethod()
-    {
-        $customer = $this->asBraintreeCustomer();
-
-        foreach ($customer->paymentMethods as $paymentMethod) {
-            if ($paymentMethod->isDefault()) {
-                return $paymentMethod;
-            }
-        }
-    }
-
-    /**
      * Find an invoice by ID.
      *
      * @param  string  $id
@@ -359,6 +343,22 @@ trait Billable
         }
 
         $subscription->applyCoupon($coupon, $removeOthers);
+    }
+
+    /**
+     * Get the default payment method for the customer.
+     *
+     * @return array
+     */
+    public function paymentMethod()
+    {
+        $customer = $this->asBraintreeCustomer();
+
+        foreach ($customer->paymentMethods as $paymentMethod) {
+            if ($paymentMethod->isDefault()) {
+                return $paymentMethod;
+            }
+        }
     }
 
     /**
