@@ -31,7 +31,7 @@ trait Billable
 
         $response = BraintreeTransaction::sale(array_merge([
             'amount' => (string) round($amount * (1 + ($this->taxPercentage() / 100)), 2),
-            'paymentMethodToken' => $customer->paymentMethods[0]->token,
+            'paymentMethodToken' => $this->paymentMethod()->token,
             'options' => [
                 'submitForSettlement' => true,
             ],
@@ -167,6 +167,22 @@ trait Billable
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get the default payment method.
+     *
+     * @return array
+     */
+    public function paymentMethod()
+    {
+        $customer = $this->asBraintreeCustomer();
+
+        foreach ($customer->paymentMethods as $paymentMethod) {
+            if ($paymentMethod->isDefault()) {
+                return $paymentMethod;
+            }
+        }
     }
 
     /**
@@ -410,7 +426,7 @@ trait Billable
             throw new Exception('Unable to create Braintree customer: '.$response->message);
         }
 
-        $paymentMethod = $response->customer->paymentMethods[0];
+        $paymentMethod = $this->paymentMethod();
 
         $paypalAccount = $paymentMethod instanceof PayPalAccount;
 
