@@ -425,6 +425,8 @@ trait Billable
         if (! $response->success) {
             throw new Exception('Unable to create Braintree customer: '.$response->message);
         }
+        
+        $this->braintree_id = $response->customer->id;
 
         $paymentMethod = $this->paymentMethod();
 
