@@ -39,6 +39,11 @@
     "extra": {
         "branch-alias": {
             "dev-master": "2.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Laravel\\Cashier\\CashierServiceProvider"
+            ]
         }
     },
     "scripts": {
