@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Http\Request;
+use PHPUnit\Framework\TestCase;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 
-class WebhookControllerTest extends PHPUnit_Framework_TestCase
+class WebhookControllerTest extends TestCase
 {
     public function testProperMethodsAreCalledBasedOnBraintreeEvent()
     {

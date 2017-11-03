@@ -2,11 +2,12 @@
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use PHPUnit\Framework\TestCase;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 
-class CashierTest extends PHPUnit_Framework_TestCase
+class CashierTest extends TestCase
 {
     public static function setUpBeforeClass()
     {
