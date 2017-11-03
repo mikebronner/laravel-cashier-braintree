@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=5.5.9",
+        "php": ">=7.0",
         "illuminate/database": "~5.3",
         "illuminate/support": "~5.3",
         "braintree/braintree_php": "~3.0",
@@ -19,11 +19,11 @@
         "symfony/http-kernel": "~2.7|~3.0"
     },
     "require-dev": {
-        "illuminate/routing": "~5.3",
         "illuminate/http": "~5.3",
+        "illuminate/routing": "~5.3",
         "illuminate/view": "~5.3",
-        "mockery/mockery": "~0.9",
-        "phpunit/phpunit": "~4.0",
+        "mockery/mockery": "~1.0",
+        "phpunit/phpunit": "~6.0",
         "vlucas/phpdotenv": "~2.0"
     },
     "autoload": {
