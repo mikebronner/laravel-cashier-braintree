@@ -159,7 +159,7 @@ class Subscription extends Model
                 : ['add' => [['inheritedFromId' => $addonName, 'quantity' => $quantity]]];
         }
 
-        BraintreeSubscription::update($this->braintree_id, ['addOns' => $options,]);
+        BraintreeSubscription::update($this->braintree_id, ['addOns' => $options]);
 
         $this->quantity = $quantity + 1;
 
