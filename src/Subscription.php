@@ -114,6 +114,61 @@ class Subscription extends Model
     }
 
     /**
+     * Increment the quantity of the subscription.
+     *
+     * @param  int  $count
+     * @return $this
+     */
+    public function incrementQuantity($count = 1)
+    {
+        $this->updateQuantity($this->quantity + $count);
+
+        return $this;
+    }
+
+    /**
+     * Decrement the quantity of the subscription.
+     *
+     * @param  int  $count
+     * @return $this
+     */
+    public function decrementQuantity($count = 1)
+    {
+        $this->updateQuantity($this->quantity - $count);
+
+        return $this;
+    }
+
+    /**
+     * Update the quantity of the subscription.
+     *
+     * @param  int  $quantity
+     * @return $this
+     */
+    public function updateQuantity($quantity)
+    {
+        $quantity = max(0, $quantity - 1);
+
+        $addonName = $this->braintree_plan.'-quantity';
+
+        $options = ['remove' => [$addonName]];
+
+        if ($quantity > 0) {
+            $options = $this->quantity > 1
+                ? ['update' => [['existingId' => $addonName, 'quantity' => $quantity]]]
+                : ['add' => [['inheritedFromId' => $addonName, 'quantity' => $quantity]]];
+        }
+
+        BraintreeSubscription::update($this->braintree_id, ['addOns' => $options]);
+
+        $this->quantity = $quantity + 1;
+
+        $this->save();
+
+        return $this;
+    }
+
+    /**
      * Swap the subscription to a new Braintree plan.
      *
      * @param  string  $plan
