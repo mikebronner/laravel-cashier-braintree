@@ -30,7 +30,7 @@ trait Billable
         $customer = $this->asBraintreeCustomer();
 
         $response = BraintreeTransaction::sale(array_merge([
-            'amount' => (string) round($amount * (1 + ($this->taxPercentage() / 100)), 2),
+            'amount' => number_format($amount * (1 + ($this->taxPercentage() / 100)), 2, '.', ''),
             'paymentMethodToken' => $this->paymentMethod()->token,
             'options' => [
                 'submitForSettlement' => true,

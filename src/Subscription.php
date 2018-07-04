@@ -196,7 +196,7 @@ class Subscription extends Model
 
         $response = BraintreeSubscription::update($subscription->id, [
             'planId' => $plan->id,
-            'price' => (string) round($plan->price * (1 + ($this->owner->taxPercentage() / 100)), 2),
+            'price' => number_format($plan->price * (1 + ($this->owner->taxPercentage() / 100)), 2, '.', ''),
             'neverExpires' => true,
             'numberOfBillingCycles' => null,
             'options' => [
