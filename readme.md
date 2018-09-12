@@ -38,8 +38,8 @@ You will need to set the following details locally and on your Braintree account
 
 ## Official Documentation
 
-Documentation for Cashier can be found on the [Laravel website](http://laravel.com/docs/billing).
+Documentation for Cashier can be found on the [Laravel website](https://laravel.com/docs/billing).
 
 ## License
 
-Laravel Cashier is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+Laravel Cashier is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT)
