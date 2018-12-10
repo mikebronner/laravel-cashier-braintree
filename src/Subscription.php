@@ -29,13 +29,30 @@ class Subscription extends Model
     ];
 
     /**
+     * Indicates plan changes should be prorated.
+     *
+     * @var bool
+     */
+    protected $prorate = true;
+
+    /**
      * Get the user that owns the subscription.
      */
     public function user()
     {
-        $model = getenv('BRAINTREE_MODEL') ?: config('services.braintree.model');
+        return $this->owner();
+    }
 
-        return $this->belongsTo($model, 'user_id');
+    /**
+     * Get the model related to the subscription.
+     */
+    public function owner()
+    {
+        $model = getenv('BRAINTREE_MODEL') ?: config('services.braintree.model', 'App\\User');
+
+        $model = new $model;
+
+        return $this->belongsTo(get_class($model), $model->getForeignKey());
     }
 
     /**
@@ -77,9 +94,9 @@ class Subscription extends Model
     {
         if (! is_null($this->trial_ends_at)) {
             return Carbon::today()->lt($this->trial_ends_at);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -91,16 +108,72 @@ class Subscription extends Model
     {
         if (! is_null($endsAt = $this->ends_at)) {
             return Carbon::now()->lt(Carbon::instance($endsAt));
-        } else {
-            return false;
         }
+
+        return false;
+    }
+
+    /**
+     * Increment the quantity of the subscription.
+     *
+     * @param  int  $count
+     * @return $this
+     */
+    public function incrementQuantity($count = 1)
+    {
+        $this->updateQuantity($this->quantity + $count);
+
+        return $this;
+    }
+
+    /**
+     * Decrement the quantity of the subscription.
+     *
+     * @param  int  $count
+     * @return $this
+     */
+    public function decrementQuantity($count = 1)
+    {
+        $this->updateQuantity($this->quantity - $count);
+
+        return $this;
+    }
+
+    /**
+     * Update the quantity of the subscription.
+     *
+     * @param  int  $quantity
+     * @return $this
+     */
+    public function updateQuantity($quantity)
+    {
+        $quantity = max(0, $quantity - 1);
+
+        $addonName = $this->braintree_plan.'-quantity';
+
+        $options = ['remove' => [$addonName]];
+
+        if ($quantity > 0) {
+            $options = $this->quantity > 1
+                ? ['update' => [['existingId' => $addonName, 'quantity' => $quantity]]]
+                : ['add' => [['inheritedFromId' => $addonName, 'quantity' => $quantity]]];
+        }
+
+        BraintreeSubscription::update($this->braintree_id, ['addOns' => $options]);
+
+        $this->quantity = $quantity + 1;
+
+        $this->save();
+
+        return $this;
     }
 
     /**
      * Swap the subscription to a new Braintree plan.
      *
      * @param  string  $plan
-     * @return $this
+     * @return $this|\Laravel\Cashier\Subscription
+     * @throws \Exception
      */
     public function swap($plan)
     {
@@ -109,13 +182,13 @@ class Subscription extends Model
         }
 
         if (! $this->active()) {
-            return $this->user->newSubscription($this->name, $plan)
+            return $this->owner->newSubscription($this->name, $plan)
                                 ->skipTrial()->create();
         }
 
         $plan = BraintreeService::findPlan($plan);
 
-        if ($this->wouldChangeBillingFrequency($plan)) {
+        if ($this->wouldChangeBillingFrequency($plan) && $this->prorate) {
             return $this->swapAcrossFrequencies($plan);
         }
 
@@ -123,11 +196,11 @@ class Subscription extends Model
 
         $response = BraintreeSubscription::update($subscription->id, [
             'planId' => $plan->id,
-            'price' => $plan->price * (1 + ($this->user->taxPercentage() / 100)),
+            'price' => number_format($plan->price * (1 + ($this->owner->taxPercentage() / 100)), 2, '.', ''),
             'neverExpires' => true,
             'numberOfBillingCycles' => null,
             'options' => [
-                'prorateCharges' => true,
+                'prorateCharges' => $this->prorate,
             ],
         ]);
 
@@ -135,7 +208,6 @@ class Subscription extends Model
             $this->fill([
                 'braintree_plan' => $plan->id,
                 'ends_at' => null,
-                'trial_ends_at' => null,
             ])->save();
         } else {
             throw new Exception('Braintree failed to swap plans: '.$response->message);
@@ -184,15 +256,15 @@ class Subscription extends Model
 
         $this->cancelNow();
 
-        return $this->user->newSubscription($this->name, $plan->id)
+        return $this->owner->newSubscription($this->name, $plan->id)
                             ->skipTrial()->create(null, [], $options);
     }
 
     /**
      * Determine if the user is switching form yearly to monthly billing.
      *
-     * @param  BraintreePlan  $currentPlan
-     * @param  BraintreePlan  $plan
+     * @param  \Braintree\Plan  $currentPlan
+     * @param  \Braintree\Plan  $plan
      * @return bool
      */
     protected function switchingToMonthlyPlan($currentPlan, $plan)
@@ -203,8 +275,8 @@ class Subscription extends Model
     /**
      * Get the discount to apply when switching to a monthly plan.
      *
-     * @param  BraintreePlan  $currentPlan
-     * @param  BraintreePlan  $plan
+     * @param  \Braintree\Plan  $currentPlan
+     * @param  \Braintree\Plan  $plan
      * @return object
      */
     protected function getDiscountForSwitchToMonthly($currentPlan, $plan)
@@ -220,7 +292,7 @@ class Subscription extends Model
     /**
      * Calculate the amount of discount to apply to a swap to monthly billing.
      *
-     * @param  BraintreePlan  $plan
+     * @param  \Braintree\Plan  $plan
      * @return float
      */
     protected function moneyRemainingOnYearlyPlan($plan)
@@ -360,6 +432,18 @@ class Subscription extends Model
         ]);
 
         $this->fill(['ends_at' => null])->save();
+
+        return $this;
+    }
+
+    /**
+     * Indicate that plan changes should not be prorated.
+     *
+     * @return $this
+     */
+    public function noProrate()
+    {
+        $this->prorate = false;
 
         return $this;
     }

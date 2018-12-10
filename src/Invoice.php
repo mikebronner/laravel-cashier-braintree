@@ -2,8 +2,8 @@
 
 namespace Laravel\Cashier;
 
-use DOMPDF;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 use Braintree\Transaction as BraintreeTransaction;
@@ -11,11 +11,11 @@ use Braintree\Transaction as BraintreeTransaction;
 class Invoice
 {
     /**
-     * The user instance.
+     * The model instance.
      *
      * @var \Illuminate\Database\Eloquent\Model
      */
-    protected $user;
+    protected $owner;
 
     /**
      * The Braintree transaction instance.
@@ -27,13 +27,13 @@ class Invoice
     /**
      * Create a new invoice instance.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $user
+     * @param  \Illuminate\Database\Eloquent\Model  $owner
      * @param  \Braintree\Transaction  $transaction
      * @return void
      */
-    public function __construct($user, BraintreeTransaction $transaction)
+    public function __construct($owner, BraintreeTransaction $transaction)
     {
-        $this->user = $user;
+        $this->owner = $owner;
         $this->transaction = $transaction;
     }
 
@@ -216,7 +216,7 @@ class Invoice
     public function view(array $data)
     {
         return View::make('cashier::receipt', array_merge(
-            $data, ['invoice' => $this, 'user' => $this->user]
+            $data, ['invoice' => $this, 'owner' => $this->owner, 'user' => $this->owner]
         ));
     }
 
@@ -236,9 +236,9 @@ class Invoice
             require_once $configPath;
         }
 
-        $dompdf = new DOMPDF;
+        $dompdf = new Dompdf;
 
-        $dompdf->load_html($this->view($data)->render());
+        $dompdf->loadHtml($this->view($data)->render());
 
         $dompdf->render();
 
@@ -248,7 +248,7 @@ class Invoice
     /**
      * Create an invoice download response.
      *
-     * @param  array   $data
+     * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function download(array $data)

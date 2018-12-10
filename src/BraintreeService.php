@@ -12,6 +12,7 @@ class BraintreeService
      *
      * @param  string  $id
      * @return \Braintree\Plan
+     * @throws \Exception
      */
     public static function findPlan($id)
     {

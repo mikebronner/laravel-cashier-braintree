@@ -1,5 +1,7 @@
 <?php
 
+namespace Laravel\Cashier\Tests;
+
 use Illuminate\Http\Request;
 use PHPUnit\Framework\TestCase;
 use Laravel\Cashier\Http\Controllers\WebhookController;

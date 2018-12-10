@@ -2,6 +2,9 @@
 
 namespace Laravel\Cashier;
 
+use Exception;
+use Illuminate\Support\Str;
+
 class Cashier
 {
     /**
@@ -26,7 +29,7 @@ class Cashier
     protected static $formatCurrencyUsing;
 
     /**
-     * Set the currency to be used when billing users.
+     * Set the currency to be used when billing models.
      *
      * @param  string  $currency
      * @param  string|null  $symbol
@@ -44,6 +47,7 @@ class Cashier
      *
      * @param  string  $currency
      * @return string
+     * @throws \Exception
      */
     protected static function guessCurrencySymbol($currency)
     {
@@ -117,10 +121,10 @@ class Cashier
 
         $amount = number_format($amount, 2);
 
-        if (starts_with($amount, '-')) {
+        if (Str::startsWith($amount, '-')) {
             return '-'.static::usesCurrencySymbol().ltrim($amount, '-');
-        } else {
-            return static::usesCurrencySymbol().$amount;
         }
+
+        return static::usesCurrencySymbol().$amount;
     }
 }

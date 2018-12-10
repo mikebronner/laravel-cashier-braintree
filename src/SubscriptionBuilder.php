@@ -4,18 +4,16 @@ namespace Laravel\Cashier;
 
 use Exception;
 use Carbon\Carbon;
-use Braintree\Plan as BraintreePlan;
-use Braintree\Discount as BraintreeDiscount;
 use Braintree\Subscription as BraintreeSubscription;
 
 class SubscriptionBuilder
 {
     /**
-     * The user model that is subscribing.
+     * The model that is subscribing.
      *
      * @var \Illuminate\Database\Eloquent\Model
      */
-    protected $user;
+    protected $owner;
 
     /**
      * The name of the subscription.
@@ -55,16 +53,16 @@ class SubscriptionBuilder
     /**
      * Create a new subscription builder instance.
      *
-     * @param  mixed  $user
+     * @param  mixed  $owner
      * @param  string  $name
      * @param  string  $plan
      * @return void
      */
-    public function __construct($user, $name, $plan)
+    public function __construct($owner, $name, $plan)
     {
-        $this->user = $user;
         $this->name = $name;
         $this->plan = $plan;
+        $this->owner = $owner;
     }
 
     /**
@@ -106,9 +104,9 @@ class SubscriptionBuilder
     }
 
     /**
-     * Add a new Braintree subscription to the user.
+     * Add a new Braintree subscription to the model.
      *
-     * @param array $options
+     * @param  array  $options
      * @return \Laravel\Cashier\Subscription
      */
     public function add(array $options = [])
@@ -123,6 +121,7 @@ class SubscriptionBuilder
      * @param  array  $customerOptions
      * @param  array  $subscriptionOptions
      * @return \Laravel\Cashier\Subscription
+     * @throws \Exception
      */
     public function create($token = null,
                            array $customerOptions = [],
@@ -148,7 +147,7 @@ class SubscriptionBuilder
             $trialEndsAt = $this->trialDays ? Carbon::now()->addDays($this->trialDays) : null;
         }
 
-        return $this->user->subscriptions()->create([
+        return $this->owner->subscriptions()->create([
             'name' => $this->name,
             'braintree_id'   => $response->subscription->id,
             'braintree_plan' => $this->plan,
@@ -177,8 +176,8 @@ class SubscriptionBuilder
 
         return array_merge([
             'planId' => $this->plan,
-            'price' => $plan->price * (1 + ($this->user->taxPercentage() / 100)),
-            'paymentMethodToken' => $customer->paymentMethods[0]->token,
+            'price' => number_format($plan->price * (1 + ($this->owner->taxPercentage() / 100)), 2, '.', ''),
+            'paymentMethodToken' => $this->owner->paymentMethod()->token,
             'trialPeriod' => $this->trialDays && ! $this->skipTrial ? true : false,
             'trialDurationUnit' => 'day',
             'trialDuration' => $trialDuration,
@@ -213,13 +212,13 @@ class SubscriptionBuilder
      */
     protected function getBraintreeCustomer($token = null, array $options = [])
     {
-        if (! $this->user->braintree_id) {
-            $customer = $this->user->createAsBraintreeCustomer($token, $options);
+        if (! $this->owner->braintree_id) {
+            $customer = $this->owner->createAsBraintreeCustomer($token, $options);
         } else {
-            $customer = $this->user->asBraintreeCustomer();
+            $customer = $this->owner->asBraintreeCustomer();
 
             if ($token) {
-                $this->user->updateCard($token);
+                $this->owner->updateCard($token);
             }
         }
 

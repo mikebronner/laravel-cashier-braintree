@@ -11,12 +11,12 @@
     ],
     "require": {
         "php": ">=7.0",
+        "braintree/braintree_php": "~3.0",
+        "dompdf/dompdf": "^0.8.0",
         "illuminate/database": "~5.3",
         "illuminate/support": "~5.3",
-        "braintree/braintree_php": "~3.0",
-        "dompdf/dompdf": "^0.6.1",
         "nesbot/carbon": "~1.0",
-        "symfony/http-kernel": "~2.7|~3.0"
+        "symfony/http-kernel": "~3.0|~4.0"
     },
     "require-dev": {
         "illuminate/http": "~5.3",
@@ -31,15 +31,28 @@
             "Laravel\\Cashier\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Laravel\\Cashier\\Tests\\": "tests/"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "2.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Laravel\\Cashier\\CashierServiceProvider"
+            ]
         }
     },
     "scripts": {
         "post-root-package-install": [
             "php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ]
+    },
+    "config": {
+        "sort-packages": true
     },
     "minimum-stability": "dev",
     "prefer-stable": true
