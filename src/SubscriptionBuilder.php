@@ -4,6 +4,7 @@ namespace Laravel\Cashier;
 
 use Exception;
 use Carbon\Carbon;
+use Braintree\Customer;
 use Braintree\Subscription as BraintreeSubscription;
 
 class SubscriptionBuilder
@@ -124,9 +125,7 @@ class SubscriptionBuilder
      * @return \Laravel\Cashier\Subscription
      * @throws \Exception
      */
-    public function create($token = null,
-                           array $customerOptions = [],
-                           array $subscriptionOptions = [])
+    public function create($token = null, array $customerOptions = [], array $subscriptionOptions = []): Subscription
     {
         $payload = $this->getSubscriptionPayload(
             $this->getBraintreeCustomer($token, $customerOptions), $subscriptionOptions
@@ -162,7 +161,7 @@ class SubscriptionBuilder
      * Get the base subscription payload for Braintree.
      *
      * @param  \Braintree\Customer  $customer
-     * @param  array $options
+     * @param  array  $options
      * @return array
      * @throws \Exception
      */
@@ -212,7 +211,7 @@ class SubscriptionBuilder
      * @param  array  $options
      * @return \Braintree\Customer
      */
-    protected function getBraintreeCustomer($token = null, array $options = [])
+    protected function getBraintreeCustomer($token = null, array $options = []): Customer
     {
         if (! $this->owner->braintree_id) {
             $customer = $this->owner->createAsBraintreeCustomer($token, $options);

@@ -3,6 +3,7 @@
 namespace Laravel\Cashier;
 
 use Exception;
+use Braintree\Plan;
 use Braintree\Plan as BraintreePlan;
 
 class BraintreeService
@@ -14,7 +15,7 @@ class BraintreeService
      * @return \Braintree\Plan
      * @throws \Exception
      */
-    public static function findPlan($id)
+    public static function findPlan($id): Plan
     {
         $plans = BraintreePlan::all();
 
