@@ -19,6 +19,7 @@
         "symfony/http-kernel": "~3.0|~4.0"
     },
     "require-dev": {
+        "ext-json": "*",
         "illuminate/http": "~5.7",
         "illuminate/routing": "~5.7",
         "illuminate/view": "~5.7",
