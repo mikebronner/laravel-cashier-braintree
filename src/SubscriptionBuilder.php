@@ -108,6 +108,7 @@ class SubscriptionBuilder
      *
      * @param  array  $options
      * @return \Laravel\Cashier\Subscription
+     * @throws \Exception
      */
     public function add(array $options = [])
     {
@@ -161,8 +162,9 @@ class SubscriptionBuilder
      * Get the base subscription payload for Braintree.
      *
      * @param  \Braintree\Customer  $customer
-     * @param  array  $options
+     * @param  array $options
      * @return array
+     * @throws \Exception
      */
     protected function getSubscriptionPayload($customer, array $options = [])
     {

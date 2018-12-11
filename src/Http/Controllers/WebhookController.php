@@ -49,7 +49,7 @@ class WebhookController extends Controller
      * Handle a subscription cancellation notification from Braintree.
      *
      * @param  \Braintree\WebhookNotification  $webhook
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     protected function handleSubscriptionCanceled($webhook)
     {
@@ -60,7 +60,7 @@ class WebhookController extends Controller
      * Handle a subscription expiration notification from Braintree.
      *
      * @param  \Braintree\WebhookNotification  $webhook
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     protected function handleSubscriptionExpired($webhook)
     {
@@ -71,7 +71,7 @@ class WebhookController extends Controller
      * Handle a subscription cancellation notification from Braintree.
      *
      * @param  string  $subscriptionId
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     protected function cancelSubscription($subscriptionId)
     {

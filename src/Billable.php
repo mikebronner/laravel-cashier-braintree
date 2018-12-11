@@ -48,10 +48,11 @@ trait Billable
     /**
      * Invoice the customer for the given amount.
      *
-     * @param  string  $description
+     * @param  string $ description
      * @param  int  $amount
      * @param  array  $options
      * @return array
+     * @throws \Exception
      */
     public function tab($description, $amount, array $options = [])
     {
@@ -69,6 +70,7 @@ trait Billable
      * @param  int  $amount
      * @param  array  $options
      * @return array
+     * @throws \Exception
      */
     public function invoiceFor($description, $amount, array $options = [])
     {
@@ -456,6 +458,7 @@ trait Billable
      * Get the Braintree customer for the model.
      *
      * @return \Braintree\Customer
+     * @throws \Braintree\Exception\NotFound
      */
     public function asBraintreeCustomer()
     {

@@ -87,7 +87,7 @@ class Invoice
      *
      * @return bool
      */
-    public function hasAddon()
+    public function hasAddOn()
     {
         return count($this->transaction->addOns) > 0;
     }
@@ -211,7 +211,7 @@ class Invoice
      * Get the View instance for the invoice.
      *
      * @param  array  $data
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Contracts\View\View
      */
     public function view(array $data)
     {
@@ -225,6 +225,7 @@ class Invoice
      *
      * @param  array  $data
      * @return string
+     * @throws \Throwable
      */
     public function pdf(array $data)
     {
@@ -250,6 +251,7 @@ class Invoice
      *
      * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Throwable
      */
     public function download(array $data)
     {

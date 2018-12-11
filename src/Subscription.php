@@ -221,6 +221,7 @@ class Subscription extends Model
      *
      * @param  string  $plan
      * @return bool
+     * @throws \Exception
      */
     protected function wouldChangeBillingFrequency($plan)
     {
@@ -233,6 +234,7 @@ class Subscription extends Model
      *
      * @param  string  $plan
      * @return $this
+     * @throws \Exception
      */
     protected function swapAcrossFrequencies($plan)
     {
