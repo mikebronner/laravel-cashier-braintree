@@ -1,5 +1,4 @@
 /vendor
-/.env
 composer.phar
 composer.lock
 .DS_Store

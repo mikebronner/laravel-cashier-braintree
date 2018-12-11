@@ -12,14 +12,6 @@ use Laravel\Cashier\Http\Controllers\WebhookController;
 
 class CashierTest extends TestCase
 {
-    public static function setUpBeforeClass()
-    {
-        if (file_exists(__DIR__.'/../.env')) {
-            $dotenv = new \Dotenv\Dotenv(__DIR__.'/../');
-            $dotenv->load();
-        }
-    }
-
     public function setUp()
     {
         Braintree_Configuration::environment('sandbox');
