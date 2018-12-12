@@ -4,9 +4,11 @@ namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use Dompdf\Dompdf;
+use Braintree\Transaction;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 use Braintree\Transaction as BraintreeTransaction;
+use Illuminate\Contracts\View\View as ViewContract;
 
 class Invoice
 {
@@ -43,7 +45,7 @@ class Invoice
      * @param  \DateTimeZone|string  $timezone
      * @return \Carbon\Carbon
      */
-    public function date($timezone = null)
+    public function date($timezone = null): Carbon
     {
         $carbon = Carbon::instance($this->transaction->createdAt);
 
@@ -87,7 +89,7 @@ class Invoice
      *
      * @return bool
      */
-    public function hasAddon()
+    public function hasAddOn()
     {
         return count($this->transaction->addOns) > 0;
     }
@@ -211,9 +213,9 @@ class Invoice
      * Get the View instance for the invoice.
      *
      * @param  array  $data
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Contracts\View\View
      */
-    public function view(array $data)
+    public function view(array $data): ViewContract
     {
         return View::make('cashier::receipt', array_merge(
             $data, ['invoice' => $this, 'owner' => $this->owner, 'user' => $this->owner]
@@ -225,6 +227,7 @@ class Invoice
      *
      * @param  array  $data
      * @return string
+     * @throws \Throwable
      */
     public function pdf(array $data)
     {
@@ -250,8 +253,9 @@ class Invoice
      *
      * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Throwable
      */
-    public function download(array $data)
+    public function download(array $data): Response
     {
         $filename = $data['product'].'_'.$this->date()->month.'_'.$this->date()->year.'.pdf';
 
@@ -268,7 +272,7 @@ class Invoice
      *
      * @return \Braintree\Transaction
      */
-    public function asBraintreeTransaction()
+    public function asBraintreeTransaction(): Transaction
     {
         return $this->transaction;
     }

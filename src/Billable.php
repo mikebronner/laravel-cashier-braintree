@@ -4,10 +4,12 @@ namespace Laravel\Cashier;
 
 use Exception;
 use Carbon\Carbon;
+use Braintree\Customer;
 use Illuminate\Support\Arr;
 use Braintree\PaymentMethod;
 use Braintree\PayPalAccount;
 use InvalidArgumentException;
+use Braintree\Result\Successful;
 use Braintree\TransactionSearch;
 use Illuminate\Support\Collection;
 use Braintree\Customer as BraintreeCustomer;
@@ -22,13 +24,11 @@ trait Billable
      *
      * @param  int  $amount
      * @param  array  $options
-     * @return array
+     * @return \Braintree\Result\Successful
      * @throws \Exception
      */
-    public function charge($amount, array $options = [])
+    public function charge($amount, array $options = []): Successful
     {
-        $customer = $this->asBraintreeCustomer();
-
         $response = BraintreeTransaction::sale(array_merge([
             'amount' => number_format($amount * (1 + ($this->taxPercentage() / 100)), 2, '.', ''),
             'paymentMethodToken' => $this->paymentMethod()->token,
@@ -51,9 +51,10 @@ trait Billable
      * @param  string  $description
      * @param  int  $amount
      * @param  array  $options
-     * @return array
+     * @return \Braintree\Result\Successful
+     * @throws \Exception
      */
-    public function tab($description, $amount, array $options = [])
+    public function tab($description, $amount, array $options = []): Successful
     {
         return $this->charge($amount, array_merge($options, [
             'customFields' => [
@@ -68,9 +69,10 @@ trait Billable
      * @param  string  $description
      * @param  int  $amount
      * @param  array  $options
-     * @return array
+     * @return \Braintree\Result\Successful
+     * @throws \Exception
      */
-    public function invoiceFor($description, $amount, array $options = [])
+    public function invoiceFor($description, $amount, array $options = []): Successful
     {
         return $this->tab($description, $amount, $options);
     }
@@ -82,7 +84,7 @@ trait Billable
      * @param  string  $plan
      * @return \Laravel\Cashier\SubscriptionBuilder
      */
-    public function newSubscription($subscription, $plan)
+    public function newSubscription($subscription, $plan): SubscriptionBuilder
     {
         return new SubscriptionBuilder($this, $subscription, $plan);
     }
@@ -153,8 +155,7 @@ trait Billable
     {
         return $this->subscriptions->sortByDesc(function ($value) {
             return $value->created_at->getTimestamp();
-        })
-        ->first(function ($value) use ($subscription) {
+        })->first(function ($value) use ($subscription) {
             return $value->name === $subscription;
         });
     }
@@ -162,7 +163,7 @@ trait Billable
     /**
      * Get all of the subscriptions for the model.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function subscriptions()
     {
@@ -196,7 +197,7 @@ trait Billable
      * @param  string  $id
      * @return \Laravel\Cashier\Invoice
      */
-    public function findInvoiceOrFail($id)
+    public function findInvoiceOrFail($id): Invoice
     {
         $invoice = $this->findInvoice($id);
 
@@ -212,12 +213,12 @@ trait Billable
      *
      * @param  string  $id
      * @param  array  $data
-     * @param  string  $storagePath
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Throwable
      */
-    public function downloadInvoice($id, array $data, $storagePath = null)
+    public function downloadInvoice($id, array $data)
     {
-        return $this->findInvoiceOrFail($id)->download($data, $storagePath);
+        return $this->findInvoiceOrFail($id)->download($data);
     }
 
     /**
@@ -226,8 +227,9 @@ trait Billable
      * @param  bool  $includePending
      * @param  array  $parameters
      * @return \Illuminate\Support\Collection
+     * @throws \Braintree\Exception\NotFound
      */
-    public function invoices($includePending = false, $parameters = [])
+    public function invoices($includePending = false, $parameters = []): Collection
     {
         $invoices = [];
 
@@ -262,8 +264,9 @@ trait Billable
      *
      * @param  array  $parameters
      * @return \Illuminate\Support\Collection
+     * @throws \Braintree\Exception\NotFound
      */
-    public function invoicesIncludingPending(array $parameters = [])
+    public function invoicesIncludingPending(array $parameters = []): Collection
     {
         return $this->invoices(true, $parameters);
     }
@@ -349,6 +352,7 @@ trait Billable
      * Get the default payment method for the customer.
      *
      * @return array
+     * @throws \Braintree\Exception\NotFound
      */
     public function paymentMethod()
     {
@@ -406,7 +410,7 @@ trait Billable
      * @return \Braintree\Customer
      * @throws \Exception
      */
-    public function createAsBraintreeCustomer($token, array $options = [])
+    public function createAsBraintreeCustomer($token, array $options = []): Customer
     {
         $response = BraintreeCustomer::create(
             array_replace_recursive([
@@ -456,8 +460,9 @@ trait Billable
      * Get the Braintree customer for the model.
      *
      * @return \Braintree\Customer
+     * @throws \Braintree\Exception\NotFound
      */
-    public function asBraintreeCustomer()
+    public function asBraintreeCustomer(): Customer
     {
         return BraintreeCustomer::find($this->braintree_id);
     }

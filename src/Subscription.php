@@ -4,6 +4,7 @@ namespace Laravel\Cashier;
 
 use Exception;
 use Carbon\Carbon;
+use Braintree\Plan;
 use LogicException;
 use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Model;
@@ -221,20 +222,21 @@ class Subscription extends Model
      *
      * @param  string  $plan
      * @return bool
+     * @throws \Exception
      */
     protected function wouldChangeBillingFrequency($plan)
     {
-        return $plan->billingFrequency !==
-           BraintreeService::findPlan($this->braintree_plan)->billingFrequency;
+        return $plan->billingFrequency !== BraintreeService::findPlan($this->braintree_plan)->billingFrequency;
     }
 
     /**
      * Swap the subscription to a new Braintree plan with a different frequency.
      *
      * @param  string  $plan
-     * @return $this
+     * @return \Laravel\Cashier\Subscription
+     * @throws \Exception
      */
-    protected function swapAcrossFrequencies($plan)
+    protected function swapAcrossFrequencies($plan): Subscription
     {
         $currentPlan = BraintreeService::findPlan($this->braintree_plan);
 
@@ -257,7 +259,8 @@ class Subscription extends Model
         $this->cancelNow();
 
         return $this->owner->newSubscription($this->name, $plan->id)
-                            ->skipTrial()->create(null, [], $options);
+            ->skipTrial()
+            ->create(null, [], $options);
     }
 
     /**
@@ -267,7 +270,7 @@ class Subscription extends Model
      * @param  \Braintree\Plan  $plan
      * @return bool
      */
-    protected function switchingToMonthlyPlan($currentPlan, $plan)
+    protected function switchingToMonthlyPlan(Plan $currentPlan, Plan $plan)
     {
         return $currentPlan->billingFrequency == 12 && $plan->billingFrequency == 1;
     }
@@ -279,7 +282,7 @@ class Subscription extends Model
      * @param  \Braintree\Plan  $plan
      * @return object
      */
-    protected function getDiscountForSwitchToMonthly($currentPlan, $plan)
+    protected function getDiscountForSwitchToMonthly(Plan $currentPlan, Plan $plan)
     {
         return (object) [
             'amount' => $plan->price,
@@ -295,7 +298,7 @@ class Subscription extends Model
      * @param  \Braintree\Plan  $plan
      * @return float
      */
-    protected function moneyRemainingOnYearlyPlan($plan)
+    protected function moneyRemainingOnYearlyPlan(Plan $plan)
     {
         return ($plan->price / 365) * Carbon::today()->diffInDays(Carbon::instance(
             $this->asBraintreeSubscription()->billingPeriodEndDate
@@ -323,7 +326,7 @@ class Subscription extends Model
         ];
     }
 
-    /*
+    /**
      * Apply a coupon to the subscription.
      *
      * @param  string  $coupon
@@ -415,7 +418,6 @@ class Subscription extends Model
      * Resume the cancelled subscription.
      *
      * @return $this
-     *
      * @throws \LogicException
      */
     public function resume()
@@ -453,7 +455,7 @@ class Subscription extends Model
      *
      * @return \Braintree\Subscription
      */
-    public function asBraintreeSubscription()
+    public function asBraintreeSubscription(): BraintreeSubscription
     {
         return BraintreeSubscription::find($this->braintree_id);
     }

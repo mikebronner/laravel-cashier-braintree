@@ -49,9 +49,9 @@ class WebhookController extends Controller
      * Handle a subscription cancellation notification from Braintree.
      *
      * @param  \Braintree\WebhookNotification  $webhook
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function handleSubscriptionCanceled($webhook)
+    protected function handleSubscriptionCanceled($webhook): Response
     {
         return $this->cancelSubscription($webhook->subscription->id);
     }
@@ -60,9 +60,9 @@ class WebhookController extends Controller
      * Handle a subscription expiration notification from Braintree.
      *
      * @param  \Braintree\WebhookNotification  $webhook
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function handleSubscriptionExpired($webhook)
+    protected function handleSubscriptionExpired($webhook): Response
     {
         return $this->cancelSubscription($webhook->subscription->id);
     }
@@ -71,9 +71,9 @@ class WebhookController extends Controller
      * Handle a subscription cancellation notification from Braintree.
      *
      * @param  string  $subscriptionId
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function cancelSubscription($subscriptionId)
+    protected function cancelSubscription($subscriptionId): Response
     {
         $subscription = $this->getSubscriptionById($subscriptionId);
 
@@ -90,7 +90,7 @@ class WebhookController extends Controller
      * @param  string  $subscriptionId
      * @return \Laravel\Cashier\Subscription
      */
-    protected function getSubscriptionById($subscriptionId)
+    protected function getSubscriptionById($subscriptionId): Subscription
     {
         return Subscription::where('braintree_id', $subscriptionId)->first();
     }
@@ -101,7 +101,7 @@ class WebhookController extends Controller
      * @param  array  $parameters
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function missingMethod($parameters = [])
+    public function missingMethod(array $parameters = []): Response
     {
         return new Response;
     }

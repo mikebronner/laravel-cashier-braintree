@@ -5,21 +5,17 @@ namespace Laravel\Cashier\Tests;
 use Carbon\Carbon;
 use Braintree_Configuration;
 use Illuminate\Http\Request;
+use Laravel\Cashier\Billable;
 use PHPUnit\Framework\TestCase;
+use Illuminate\Database\Schema\Builder;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 
 class CashierTest extends TestCase
 {
-    public static function setUpBeforeClass()
-    {
-        if (file_exists(__DIR__.'/../.env')) {
-            $dotenv = new \Dotenv\Dotenv(__DIR__.'/../');
-            $dotenv->load();
-        }
-    }
-
     public function setUp()
     {
         Braintree_Configuration::environment('sandbox');
@@ -37,7 +33,7 @@ class CashierTest extends TestCase
         $db->bootEloquent();
         $db->setAsGlobal();
 
-        $this->schema()->create('users', function ($table) {
+        $this->schema()->create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('email');
             $table->string('name');
@@ -48,7 +44,7 @@ class CashierTest extends TestCase
             $table->timestamps();
         });
 
-        $this->schema()->create('subscriptions', function ($table) {
+        $this->schema()->create('subscriptions', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id');
             $table->string('name');
@@ -67,10 +63,7 @@ class CashierTest extends TestCase
         $this->schema()->drop('subscriptions');
     }
 
-    /**
-     * Tests.
-     */
-    public function testSubscriptionsCanBeCreated()
+    public function test_subscriptions_can_be_created()
     {
         $owner = User::create([
             'email' => 'taylor@laravel.com',
@@ -122,10 +115,9 @@ class CashierTest extends TestCase
 
         // Invoice Tests
         $invoice = $owner->invoicesIncludingPending()[0];
-
         $foundInvoice = $owner->findInvoice($invoice->id);
-        $this->assertEquals($invoice->id, $foundInvoice->id);
 
+        $this->assertEquals($invoice->id, $foundInvoice->id);
         $this->assertEquals('$10.00', $invoice->total());
         $this->assertFalse($invoice->hasDiscount());
         $this->assertEquals(0, count($invoice->coupons()));
@@ -141,7 +133,8 @@ class CashierTest extends TestCase
 
         // Create Subscription
         $owner->newSubscription('main', 'monthly-10-1')
-                ->withCoupon('coupon-1')->create($this->getTestToken());
+            ->withCoupon('coupon-1')
+            ->create($this->getTestToken());
 
         $subscription = $owner->subscription('main');
 
@@ -169,7 +162,8 @@ class CashierTest extends TestCase
 
         // Create Subscription
         $owner->newSubscription('main', 'monthly-10-1')
-                ->trialDays(7)->create($this->getTestToken());
+            ->trialDays(7)
+            ->create($this->getTestToken());
 
         $subscription = $owner->subscription('main');
 
@@ -180,8 +174,8 @@ class CashierTest extends TestCase
         // Cancel Subscription
         $subscription->cancel();
 
-        // Braintree trials are just cancelled out right since we have no good way to cancel them
-        // and then later resume them
+        // Braintree trials are just cancelled out right since we have
+        // no good way to cancel themb and then later resume them.
         $this->assertFalse($subscription->active());
         $this->assertFalse($subscription->onGracePeriod());
     }
@@ -194,9 +188,9 @@ class CashierTest extends TestCase
         ]);
 
         // Create Subscription
-        $owner->newSubscription('main', 'monthly-10-1')
-                ->create($this->getTestToken());
+        $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
 
+        // Apply Coupon
         $owner->applyCoupon('coupon-1', 'main');
 
         $subscription = $owner->subscription('main')->asBraintreeSubscription();
@@ -225,7 +219,6 @@ class CashierTest extends TestCase
 
         // Swap To Monthly
         $owner->subscription('main')->swap('monthly-10-1');
-
         $owner = $owner->fresh();
 
         $this->assertEquals(2, count($owner->subscriptions));
@@ -238,6 +231,7 @@ class CashierTest extends TestCase
             if ($discount->id === 'plan-credit') {
                 $this->assertEquals('10.00', $discount->amount);
                 $this->assertEquals(9, $discount->numberOfBillingCycles);
+
                 return;
             }
         }
@@ -276,6 +270,7 @@ class CashierTest extends TestCase
             if ($discount->id === 'plan-credit') {
                 $this->assertEquals('90.00', $discount->amount);
                 $this->assertEquals(1, $discount->numberOfBillingCycles);
+
                 return;
             }
         }
@@ -290,19 +285,17 @@ class CashierTest extends TestCase
             'name' => 'Taylor Otwell',
         ]);
 
-        $owner->newSubscription('main', 'monthly-10-1')
-                ->create($this->getTestToken());
+        // Create Subscription
+        $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
 
-        $subscription = $owner->subscription('main');
-
+        // Perform Request to Webhook
         $request = Request::create('/', 'POST', [], [], [], [], json_encode(['kind' => 'SubscriptionCanceled',
             'subscription' => [
-                'id' => $subscription->braintree_id,
+                'id' => $owner->subscription('main')->braintree_id,
             ],
         ]));
+        $response = (new CashierTestControllerStub)->handleWebhook($request);
 
-        $controller = new CashierTestControllerStub;
-        $response = $controller->handleWebhook($request);
         $this->assertEquals(200, $response->getStatusCode());
 
         $owner = $owner->fresh();
@@ -318,22 +311,23 @@ class CashierTest extends TestCase
             'name' => 'Taylor Otwell',
         ]);
 
-        $owner->newSubscription('main', 'monthly-10-1')
-                ->create($this->getTestToken());
+        // Create Subscription
+        $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
 
+        // Cancel Subscription
         $subscription = $owner->subscription('main');
-
         $subscription->cancel();
+
         $this->assertTrue($subscription->onGracePeriod());
 
+        // Perform Request to Webhook
         $request = Request::create('/', 'POST', [], [], [], [], json_encode(['kind' => 'SubscriptionCanceled',
             'subscription' => [
                 'id' => $subscription->braintree_id,
             ],
         ]));
+        $response = (new CashierTestControllerStub)->handleWebhook($request);
 
-        $controller = new CashierTestControllerStub;
-        $response = $controller->handleWebhook($request);
         $this->assertEquals(200, $response->getStatusCode());
 
         $owner = $owner->fresh();
@@ -347,15 +341,12 @@ class CashierTest extends TestCase
         return 'fake-valid-nonce';
     }
 
-    /**
-     * Schema Helpers.
-     */
-    protected function schema()
+    protected function schema(): Builder
     {
         return $this->connection()->getSchemaBuilder();
     }
 
-    protected function connection()
+    protected function connection(): ConnectionInterface
     {
         return Eloquent::getConnectionResolver()->connection();
     }
@@ -363,7 +354,7 @@ class CashierTest extends TestCase
 
 class User extends Eloquent
 {
-    use \Laravel\Cashier\Billable;
+    use Billable;
 }
 
 class CashierTestControllerStub extends WebhookController
@@ -371,8 +362,8 @@ class CashierTestControllerStub extends WebhookController
     /**
      * Parse the given Braintree webhook notification request.
      *
-     * @param  Request  $request
-     * @return WebhookNotification
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Braintree\WebhookNotification
      */
     protected function parseBraintreeNotification($request)
     {
