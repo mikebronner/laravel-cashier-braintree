@@ -175,7 +175,7 @@ class CashierTest extends TestCase
         $subscription->cancel();
 
         // Braintree trials are just cancelled out right since we have
-        // no good way to cancel themb and then later resume them.
+        // no good way to cancel them and then later resume them.
         $this->assertFalse($subscription->active());
         $this->assertFalse($subscription->onGracePeriod());
     }
