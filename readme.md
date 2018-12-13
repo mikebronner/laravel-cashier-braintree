@@ -44,4 +44,4 @@ Documentation for Cashier can be found on the [Laravel website](https://laravel.
 
 ## License
 
-Laravel Cashier is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT)
+Laravel Cashier is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
