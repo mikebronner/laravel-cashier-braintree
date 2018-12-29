@@ -88,9 +88,9 @@ class WebhookController extends Controller
      * Get the model for the given subscription ID.
      *
      * @param  string  $subscriptionId
-     * @return \Laravel\Cashier\Subscription
+     * @return \Laravel\Cashier\Subscription|null
      */
-    protected function getSubscriptionById($subscriptionId): Subscription
+    protected function getSubscriptionById($subscriptionId): ?Subscription
     {
         return Subscription::where('braintree_id', $subscriptionId)->first();
     }
