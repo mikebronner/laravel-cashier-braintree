@@ -61,7 +61,7 @@
 
             <!-- Organization Name / Image -->
             <td align="right">
-                <strong>{{ $header or $vendor }}</strong>
+                <strong>{{ $header ?? $vendor }}</strong>
             </td>
         </tr>
         <tr valign="top">
