@@ -1,5 +1,13 @@
 # Release Notes
 
+## [Unreleased](https://github.com/laravel/cashier-braintree/compare/v3.0.0...3.0)
+
+### Changed
+- Convert `or` to `??` ([#65](https://github.com/laravel/cashier-braintree/pull/65)) 
+
+### Fixed
+- Fix return type for `getSubscriptionById` on the `WebhookController` ([#66](https://github.com/laravel/cashier-braintree/pull/66))
+
 ## [v3.0.0](https://github.com/laravel/cashier-braintree/compare/v2.1.0...v3.0.0)
 
 ### Added
