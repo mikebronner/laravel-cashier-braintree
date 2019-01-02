@@ -8,7 +8,7 @@
 ### Fixed
 - Fix return type for `getSubscriptionById` on the `WebhookController` ([#66](https://github.com/laravel/cashier-braintree/pull/66))
 
-## [v3.0.0](https://github.com/laravel/cashier-braintree/compare/v2.1.0...v3.0.0)
+## [v3.0.0 (2018-12-13)](https://github.com/laravel/cashier-braintree/compare/v2.1.0...v3.0.0)
 
 ### Added
 - Added support for PHP 7.3 ([#62](https://github.com/laravel/cashier-braintree/pull/62))
