@@ -384,7 +384,6 @@ class Subscription extends Model
             $this->save();
         }
 
-
         return $this;
     }
 

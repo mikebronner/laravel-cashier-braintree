@@ -40,7 +40,7 @@ You can set these variables in the `phpunit.xml.dist` file.
 
 ## Official Documentation
 
-Documentation for Cashier can be found on the [Laravel website](https://laravel.com/docs/billing).
+Documentation for Cashier can be found on the [Laravel website](https://laravel.com/docs/braintree).
 
 ## License
 
