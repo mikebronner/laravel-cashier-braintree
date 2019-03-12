@@ -1,9 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier-braintree/compare/v3.0.2...3.0)
+## [Unreleased](https://github.com/laravel/cashier-braintree/compare/v3.1.1...3.0)
 
 
-## [v3.1.0 (2019-02-12)](https://github.com/laravel/cashier-braintree/compare/v3.0.1...v3.0.2)
+## [v3.1.1 (2019-03-12)](https://github.com/laravel/cashier-braintree/compare/v3.1.0...v3.1.1)
+
+### Fixed
+- Update version of `nesbot/carbon` to match framework ([#70](https://github.com/laravel/cashier-braintree/pull/70))
+
+
+## [v3.1.0 (2019-02-12)](https://github.com/laravel/cashier-braintree/compare/v3.0.1...v3.1.0)
 
 ### Added
 - Laravel 5.8 support ([d591dd9](https://github.com/laravel/cashier-braintree/commit/d591dd98a989d671c16752e893e3351a70633437))
