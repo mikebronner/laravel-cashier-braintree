@@ -114,7 +114,7 @@ class Invoice
         $totalAddOn = 0;
 
         foreach ($this->transaction->addOns as $addOn) {
-            $totalAddOn += $addOn->amount * $addOn->quantity;
+            $totalAddOn += $addOn->amount * ($addOn->quantity ?? 1);
         }
 
         return (float) $totalAddOn;
