@@ -95,7 +95,7 @@ class Invoice
     }
 
     /**
-     * Get the discount amount.
+     * Get the add-on amount.
      *
      * @return string
      */
@@ -114,7 +114,7 @@ class Invoice
         $totalAddOn = 0;
 
         foreach ($this->transaction->addOns as $addOn) {
-            $totalAddOn += $addOn->amount;
+            $totalAddOn += $addOn->amount * $addOn->quantity;
         }
 
         return (float) $totalAddOn;
