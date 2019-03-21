@@ -179,13 +179,13 @@ trait Billable
     public function findInvoice($id)
     {
         try {
-            $invoice = BraintreeTransaction::find($id);
+            $transaction = BraintreeTransaction::find($id);
 
-            if ($invoice->customerDetails->id != $this->braintree_id) {
+            if ($transaction->customerDetails->id != $this->braintree_id) {
                 return;
             }
 
-            return new Invoice($this, $invoice);
+            return new Invoice($this, $transaction);
         } catch (Exception $e) {
             //
         }
