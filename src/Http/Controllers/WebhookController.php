@@ -3,6 +3,7 @@
 namespace Laravel\Cashier\Http\Controllers;
 
 use Exception;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Laravel\Cashier\Subscription;
 use Braintree\WebhookNotification;
@@ -25,7 +26,7 @@ class WebhookController extends Controller
             return;
         }
 
-        $method = 'handle'.studly_case(str_replace('.', '_', $webhook->kind));
+        $method = 'handle'.Str::studly(str_replace('.', '_', $webhook->kind));
 
         if (method_exists($this, $method)) {
             return $this->{$method}($webhook);
