@@ -230,7 +230,7 @@ class CashierTest extends TestCase
         foreach ($braintreeSubscription->discounts as $discount) {
             if ($discount->id === 'plan-credit') {
                 $this->assertEquals('10.00', $discount->amount);
-                $this->assertEquals(9, $discount->numberOfBillingCycles);
+                $this->assertEquals(10, $discount->numberOfBillingCycles);
 
                 return;
             }
@@ -268,7 +268,7 @@ class CashierTest extends TestCase
 
         foreach ($braintreeSubscription->discounts as $discount) {
             if ($discount->id === 'plan-credit') {
-                $this->assertEquals('90.00', $discount->amount);
+                $this->assertEquals('100.00', $discount->amount);
                 $this->assertEquals(1, $discount->numberOfBillingCycles);
 
                 return;
