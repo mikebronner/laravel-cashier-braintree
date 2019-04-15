@@ -220,7 +220,7 @@ class Subscription extends Model
     /**
      * Determine if the given plan would alter the billing frequency.
      *
-     * @param  string  $plan
+     * @param  \Braintree\Plan  $plan
      * @return bool
      * @throws \Exception
      */
@@ -232,7 +232,7 @@ class Subscription extends Model
     /**
      * Swap the subscription to a new Braintree plan with a different frequency.
      *
-     * @param  string  $plan
+     * @param  \Braintree\Plan  $plan
      * @return \Laravel\Cashier\Subscription
      * @throws \Exception
      */
