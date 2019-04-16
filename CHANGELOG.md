@@ -1,6 +1,13 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier-braintree/compare/v3.1.1...3.0)
+## [Unreleased](https://github.com/laravel/cashier-braintree/compare/v3.1.2...3.0)
+
+
+## [v3.1.2 (2019-03-16)](https://github.com/laravel/cashier-braintree/compare/v3.1.1...v3.1.2)
+
+### Fixed
+- Fix add on quantities ([ff1963a](https://github.com/laravel/cashier-braintree/commit/ff1963af04634e10ed8cc215f44d84fd24c1d4bd), [62324b6](https://github.com/laravel/cashier-braintree/commit/62324b6f569e95273a551c4943bcff6c4a19eeb8))
+- Fix type-hint for Braintree plan ([#72](https://github.com/laravel/cashier-braintree/pull/72))
 
 
 ## [v3.1.1 (2019-03-12)](https://github.com/laravel/cashier-braintree/compare/v3.1.0...v3.1.1)
