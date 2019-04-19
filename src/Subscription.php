@@ -236,7 +236,7 @@ class Subscription extends Model
      * @return \Laravel\Cashier\Subscription
      * @throws \Exception
      */
-    protected function swapAcrossFrequencies($plan): Subscription
+    protected function swapAcrossFrequencies($plan): self
     {
         $currentPlan = BraintreeService::findPlan($this->braintree_plan);
 
@@ -336,7 +336,7 @@ class Subscription extends Model
     public function applyCoupon($coupon, $removeOthers = false)
     {
         if (! $this->active()) {
-            throw new InvalidArgumentException("Unable to apply coupon. Subscription not active.");
+            throw new InvalidArgumentException('Unable to apply coupon. Subscription not active.');
         }
 
         BraintreeSubscription::update($this->braintree_id, [

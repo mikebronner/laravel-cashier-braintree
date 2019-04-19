@@ -342,7 +342,7 @@ trait Billable
         $subscription = $this->subscription($subscription);
 
         if (! $subscription) {
-            throw new InvalidArgumentException("Unable to apply coupon. Subscription does not exist.");
+            throw new InvalidArgumentException('Unable to apply coupon. Subscription does not exist.');
         }
 
         $subscription->applyCoupon($coupon, $removeOthers);
@@ -429,7 +429,7 @@ trait Billable
         if (! $response->success) {
             throw new Exception('Unable to create Braintree customer: '.$response->message);
         }
-        
+
         $this->braintree_id = $response->customer->id;
 
         $paymentMethod = $this->paymentMethod();
