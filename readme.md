@@ -1,4 +1,4 @@
-> Laravel has ceised official support of this package. We will keep it going as long as possible, as we use it in our projects.
+> Laravel has ceased official support of this package. We will keep it going as long as possible, as we use it in our projects.
 
 # Laravel Cashier - Braintree Edition
 ## Introduction
