@@ -15,9 +15,9 @@
         </testsuite>
     </testsuites>
     <php>
-        <env name="BRAINTREE_MERCHANT_ID" value=""/>
-        <env name="BRAINTREE_PUBLIC_KEY" value=""/>
-        <env name="BRAINTREE_PRIVATE_KEY" value=""/>
+        <env name="BRAINTREE_MERCHANT_ID" value="8qjx4d8w8vgp3qyc"/>
+        <env name="BRAINTREE_PUBLIC_KEY" value="y3xnpdqjkn7xgg42"/>
+        <env name="BRAINTREE_PRIVATE_KEY" value="a7b80979013f8d446428adc308a8047a"/>
         <env name="BRAINTREE_MODEL" value="Laravel\Cashier\Tests\User"/>
     </php>
 </phpunit>

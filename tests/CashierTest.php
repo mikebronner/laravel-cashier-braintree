@@ -16,7 +16,7 @@ use Laravel\Cashier\Http\Controllers\WebhookController;
 
 class CashierTest extends TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
         Braintree_Configuration::environment('sandbox');
         Braintree_Configuration::merchantId(getenv('BRAINTREE_MERCHANT_ID'));
@@ -57,12 +57,13 @@ class CashierTest extends TestCase
         });
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         $this->schema()->drop('users');
         $this->schema()->drop('subscriptions');
     }
 
+    /** @group test */
     public function test_subscriptions_can_be_created()
     {
         $owner = User::create([
