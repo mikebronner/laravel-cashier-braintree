@@ -1,9 +1,10 @@
-> Laravel has ceased official support of this package. We will keep it going as long as possible, as we use it in our projects.
-
 # Laravel Cashier - Braintree Edition
 ## Introduction
 
 Laravel Cashier Braintree provides an expressive, fluent interface to [Braintree's](https://www.braintreepayments.com/) subscription billing services. It handles almost all of the boilerplate subscription billing code you are dreading writing. In addition to basic subscription management, Cashier Braintree can handle coupons, swapping subscription, cancellation grace periods, and even generate invoice PDFs.
+
+This repository is being maintained by Mike Bronner (GeneaLabs), and is based
+    on the discontinued Laravel package.
 
 ## Testing
 
