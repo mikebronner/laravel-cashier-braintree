@@ -1,10 +1,10 @@
 <?php
 
-namespace Laravel\Cashier\Tests;
+namespace Laravel\Cashier\Tests\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Laravel\Cashier\Tests\Fixtures\Http\Controllers\WebhookController;
 use PHPUnit\Framework\TestCase;
-use Laravel\Cashier\Http\Controllers\WebhookController;
 
 class WebhookControllerTest extends TestCase
 {
@@ -15,7 +15,7 @@ class WebhookControllerTest extends TestCase
             'kind' => 'charge_succeeded', 'id' => 'event-id',
         ]));
 
-        (new WebhookControllerTestStub)->handleWebhook($request);
+        (new WebhookController)->handleWebhook($request);
 
         $this->assertTrue($_SERVER['__received']);
     }
@@ -26,27 +26,8 @@ class WebhookControllerTest extends TestCase
             'kind' => 'foo_bar', 'id' => 'event-id',
         ]));
 
-        $response = (new WebhookControllerTestStub)->handleWebhook($request);
+        $response = (new WebhookController)->handleWebhook($request);
 
         $this->assertEquals(200, $response->getStatusCode());
-    }
-}
-
-class WebhookControllerTestStub extends WebhookController
-{
-    public function handleChargeSucceeded()
-    {
-        $_SERVER['__received'] = true;
-    }
-
-    /**
-     * Parse the given Braintree webhook notification request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Braintree\WebhookNotification
-     */
-    protected function parseBraintreeNotification($request)
-    {
-        return json_decode($request->getContent());
     }
 }

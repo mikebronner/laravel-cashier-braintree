@@ -1,5 +1,14 @@
 # Release Notes
 
+## [4.0.0] - 2019-10-09
+
+### Updated
+
+- readme with full documentation brought over from Laravel.com.
+- test and return them to green.
+
+# Prior Release Notes from Laravel
+
 ## [Unreleased](https://github.com/laravel/cashier-braintree/compare/v3.1.2...3.0)
 
 

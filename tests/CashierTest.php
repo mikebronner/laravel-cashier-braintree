@@ -2,22 +2,24 @@
 
 namespace Laravel\Cashier\Tests;
 
-use Carbon\Carbon;
 use Braintree_Configuration;
-use Illuminate\Http\Request;
-use Laravel\Cashier\Billable;
-use PHPUnit\Framework\TestCase;
-use Illuminate\Database\Schema\Builder;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\ConnectionInterface;
+use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model as Eloquent;
-use Laravel\Cashier\Http\Controllers\WebhookController;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Laravel\Cashier\Tests\Fixtures\Http\Controllers\CashierTestController;
+use Laravel\Cashier\Tests\Fixtures\User;
 
 class CashierTest extends TestCase
 {
     public function setUp() : void
     {
+        parent::setUp();
+
         Braintree_Configuration::environment('sandbox');
         Braintree_Configuration::merchantId(getenv('BRAINTREE_MERCHANT_ID'));
         Braintree_Configuration::publicKey(getenv('BRAINTREE_PUBLIC_KEY'));
@@ -63,13 +65,9 @@ class CashierTest extends TestCase
         $this->schema()->drop('subscriptions');
     }
 
-    /** @group test */
     public function test_subscriptions_can_be_created()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
         $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
@@ -127,10 +125,7 @@ class CashierTest extends TestCase
 
     public function test_creating_subscription_with_coupons()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
         $owner->newSubscription('main', 'monthly-10-1')
@@ -156,10 +151,7 @@ class CashierTest extends TestCase
 
     public function test_creating_subscription_with_trial()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
         $owner->newSubscription('main', 'monthly-10-1')
@@ -181,36 +173,36 @@ class CashierTest extends TestCase
         $this->assertFalse($subscription->onGracePeriod());
     }
 
+    /** @group test */
     public function test_applying_coupons_to_existing_customers()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
-        $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
+        $owner->newSubscription('main', 'monthly-10-1')
+            ->create($this->getTestToken());
 
         // Apply Coupon
         $owner->applyCoupon('coupon-1', 'main');
 
         $subscription = $owner->subscription('main')->asBraintreeSubscription();
+        $couponWasApplied = false;
 
         foreach ($subscription->discounts as $discount) {
             if ($discount->id === 'coupon-1') {
-                return;
+                $couponWasApplied = true;
+                break;
             }
         }
 
-        $this->fail('Coupon was not applied to existing customer.');
+        $this->assertTrue($couponWasApplied);
+
+        // $this->fail('Coupon was not applied to existing customer.');
     }
 
     public function test_yearly_to_monthly_properly_prorates()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
         $owner->newSubscription('main', 'yearly-100-1')->create($this->getTestToken());
@@ -242,10 +234,7 @@ class CashierTest extends TestCase
 
     public function test_monthly_to_yearly_properly_prorates()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
         $owner->newSubscription('main', 'yearly-100-1')->create($this->getTestToken());
@@ -281,10 +270,7 @@ class CashierTest extends TestCase
 
     public function test_marking_as_cancelled_from_webhook()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
         $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
@@ -295,7 +281,7 @@ class CashierTest extends TestCase
                 'id' => $owner->subscription('main')->braintree_id,
             ],
         ]));
-        $response = (new CashierTestControllerStub)->handleWebhook($request);
+        $response = (new CashierTestController)->handleWebhook($request);
 
         $this->assertEquals(200, $response->getStatusCode());
 
@@ -307,10 +293,7 @@ class CashierTest extends TestCase
 
     public function test_marking_subscription_cancelled_on_grace_period_as_cancelled_now_from_webhook()
     {
-        $owner = User::create([
-            'email' => 'taylor@laravel.com',
-            'name' => 'Taylor Otwell',
-        ]);
+        $owner = factory(User::class)->create();
 
         // Create Subscription
         $owner->newSubscription('main', 'monthly-10-1')->create($this->getTestToken());
@@ -327,7 +310,7 @@ class CashierTest extends TestCase
                 'id' => $subscription->braintree_id,
             ],
         ]));
-        $response = (new CashierTestControllerStub)->handleWebhook($request);
+        $response = (new CashierTestController)->handleWebhook($request);
 
         $this->assertEquals(200, $response->getStatusCode());
 
@@ -350,24 +333,5 @@ class CashierTest extends TestCase
     protected function connection(): ConnectionInterface
     {
         return Eloquent::getConnectionResolver()->connection();
-    }
-}
-
-class User extends Eloquent
-{
-    use Billable;
-}
-
-class CashierTestControllerStub extends WebhookController
-{
-    /**
-     * Parse the given Braintree webhook notification request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Braintree\WebhookNotification
-     */
-    protected function parseBraintreeNotification($request)
-    {
-        return json_decode($request->getContent());
     }
 }
